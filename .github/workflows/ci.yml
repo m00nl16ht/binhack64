@@ -1,0 +1,23 @@
+# binhack64 - Dreamcast IP.BIN/BOOT.BIN Selfboot Hacker
+# Copyright (C) FamilyGuy and contributors
+# Licensed under the GNU General Public License v3 (GPLv3).
+# See the LICENSE file for the full license text.
+
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: make
+
+      - name: Test
+        run: make test

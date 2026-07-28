@@ -20,6 +20,11 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
 - `help` / `--help` / `-h` and `--version` / `-v`.
 - `make dist` target: strips and (best-effort) UPX-compresses the binary
   for release, kept separate from a plain development build.
+- `make test`: a black-box test suite (`tests/run.sh`) run against fixture
+  boot binaries (Katana, WinCE, bincon'd) checking exit codes, that
+  `patch-boot`/`patch-ip` never touch the file the other owns, that they
+  compose to the same result as `patch-all`, and that interactive mode
+  matches. Runs in CI via GitHub Actions on every push/PR.
 
 ### Changed
 
@@ -46,7 +51,7 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
 
 binhack32 was FamilyGuy's 32-bit clone of the original 16-bit
 `BINHACK.EXE`, refactored into binhack64 above. Kept here for historical
-reference; see `.ref/binhack32/README` for the original wording.
+reference.
 
 ### [1.0.0.5]
 

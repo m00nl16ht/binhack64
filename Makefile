@@ -40,6 +40,10 @@ dist :
 	$(STRIP) $(TARGET)
 	-$(PACKER) $(PACKEROPT) $(TARGET)
 
+# Build, then run the black-box test suite against it.
+test : all
+	bash tests/run.sh $(TARGET)
+
 # compile source
 $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp | $(OBJ_DIR)
 	$(CC) $(CPPFLAGS) -c $< -o $@

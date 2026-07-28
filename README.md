@@ -1,5 +1,7 @@
 # binhack64
 
+[![CI](https://github.com/m00nl16ht/binhack64/actions/workflows/ci.yml/badge.svg)](https://github.com/m00nl16ht/binhack64/actions/workflows/ci.yml)
+
 `binhack64` is a modernized, 64-bit-native continuation of `binhack32`
 (FamilyGuy and contributors, since 2010), itself a clone of the original
 16-bit `BINHACK.EXE` for the Sega Dreamcast. It patches selfboot discs so a
@@ -61,6 +63,19 @@ compress it with:
 ```
 make dist
 ```
+
+## Testing
+
+```
+make test
+```
+
+Builds the project, then runs `tests/run.sh`: a black-box suite that runs
+the binary against the fixtures in `tests/fixtures/` (Katana, WinCE, and
+bincon'd boot binaries) and checks exit codes, that `patch-boot`/`patch-ip`
+never touch the file the other owns, that they compose to the same result
+as `patch-all`, and that interactive mode matches. Runs entirely in a
+temporary scratch directory. CI runs the same thing on every push/PR.
 
 ## License
 
