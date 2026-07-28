@@ -1,0 +1,42 @@
+/*
+	binhack64 - Dreamcast IP.BIN/BOOT.BIN Selfboot Hacker
+	Copyright (C) FamilyGuy and contributors
+	Licensed under the GNU General Public License v3 (GPLv3).
+	See the LICENSE file for the full license text.
+
+	Windows version-info resource.
+*/
+
+#include <winver.h>
+#include <windows.h>
+
+1 VERSIONINFO
+FILEVERSION 2,0,0,0
+PRODUCTVERSION 2,0,0,0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+
+BEGIN
+
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040C04E4"
+		BEGIN
+			VALUE "Comments", "Modernized 64-bit BINHACK clone\0"
+			VALUE "CompanyName", "FamilyGuy and contributors\0"
+			VALUE "FileDescription", "Dreamcast IP.BIN/BOOT.BIN Selfboot Hacker\0"
+			VALUE "FileVersion", "2.0.0.0"
+			VALUE "InternalName", "binhack64.exe\0"
+			VALUE "LegalCopyright", "GNU General Public License v3\0"
+			VALUE "OriginalFilename", "binhack64.exe\0"
+			VALUE "ProductName", "BINHACK64\0"
+			VALUE "ProductVersion", "2.0.0.0"
+		END
+	END
+
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x1009, 0x04E4
+	END
+
+END
