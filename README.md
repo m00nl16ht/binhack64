@@ -36,6 +36,26 @@ binhack64 patch-ip <boot.bin> <ip.bin>
 binhack64 patch-all <boot.bin> <ip.bin> <lba>
     Patch both BOOT.BIN and IP.BIN (classic BINHACK behavior).
 
+binhack64 hack0 <boot.bin> <lba> [old-lba]
+    HACK0 (kikuchan): replaces every raw old-lba reference with lba
+    directly (no +166/+150 offset).
+
+binhack64 hack <boot.bin> <lba> [old-lba]
+    HACK (Bero): replaces every (old-lba+166) reference with (lba+166).
+
+binhack64 hack2 <boot.bin> <lba> [old-lba]
+    HACK2 (Unknown): replaces every (old-lba+150) reference with (lba+150).
+
+binhack64 hack3 <boot.bin> <lba> [old-lba]
+    HACK3 (Pekearai): HACK + HACK2 combined.
+
+binhack64 dahack <boot.bin> <lba> [old-lba]
+    DAHACK (Mr. KiMWU): HACK(lba) + HACK2(0).
+
+binhack64 cdda <boot.bin>
+    CDDA fix (Mr. KiMWU): fixes multi-track CDDA bootbins where the first
+    audio track reads as track04 instead of track01.
+
 binhack64 help
     Show usage.
 
@@ -46,6 +66,15 @@ binhack64 --version
 `<lba>` is the MSINFO/LBA value of the boot binary on the target disc image
 (the same value the original `BINHACK.EXE` asked for as "msinfo"). It's
 ignored for Windows CE binaries, which don't need the LBA hack.
+
+`hack0`/`hack`/`hack2`/`hack3`/`dahack`/`cdda` are alternate scene-standard
+patches (`hack`/`hack2`/`hack3`/`dahack`/`cdda` by Bero, Unknown, Pekearai
+and Mr. KiMWU; `hack0` from kikuchan's hack4) — unlike `patch-*`, they only
+ever touch the boot binary, never `IP.BIN`. `[old-lba]` defaults to 45000
+(how most original discs were mastered). `cdda` needs no LBA at all: it
+locates itself from the boot binary's own `CD001` signature, and — unlike
+the original it's ported from — refuses to write if the computed patch
+location doesn't look like a real CDDA bootbin.
 
 ## Building
 
@@ -70,11 +99,13 @@ make dist
 make test
 ```
 
-Builds the project, then runs `tests/run.sh`: a black-box suite that runs
-the binary against the fixtures in `tests/fixtures/` (Katana, WinCE, and
-bincon'd boot binaries) and checks exit codes, that `patch-boot`/`patch-ip`
-never touch the file the other owns, that they compose to the same result
-as `patch-all`, and that interactive mode matches. Runs entirely in a
+Builds the project, then runs `tests/run.sh`: a black-box suite against the
+fixtures in `tests/fixtures/` (Katana, WinCE, bincon'd, and CDDA boot
+binaries, plus a synthetic fixture built to exercise `hack0`/`hack`/`hack2`)
+that checks exit codes, exact patched bytes, that `patch-boot`/`patch-ip`
+never touch the file the other owns and compose to the same result as
+`patch-all`, that `hack3`/`dahack` compose from `hack`/`hack2` the same
+way, and that interactive mode matches `patch-all`. Runs entirely in a
 temporary scratch directory. CI runs the same thing on every push/PR.
 
 ## License

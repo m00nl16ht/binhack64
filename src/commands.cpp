@@ -9,6 +9,19 @@
 
 #include "commands.hpp"
 
+// Opens bootname read/write and gets its size, without requiring a CD001
+// signature (unlike processBootBin) - hack/hack2/hack3/dahack/cdda don't
+// all need one.
+static bool openBootReadWrite(const string& bootname, unsigned int& bootsize, fstream& boot) {
+    boot.open(bootname.c_str(), ios::binary | ios::in | ios::out);
+    if (boot.fail()) {
+        cout << "Error opening " << bootname << "." << endl;
+        return false;
+    }
+    bootsize = filesize(boot);
+    return true;
+}
+
 // ============================================================================
 // MID-LEVEL BUILDING BLOCKS
 // ============================================================================
@@ -199,6 +212,64 @@ int patchAll(const string& bootname, const string& ipname, unsigned int lba) {
         result = ExitCode::IpOpenError;
     } else if (!createHackedIpBin(ipname, iphackbuf, bootsize, boot)) {
         result = ExitCode::IpWriteError;
+    }
+
+    boot.close();
+    return result;
+}
+
+// ============================================================================
+// HACK / HACK2 / HACK3 / DAHACK / CDDA COMMANDS
+// ============================================================================
+
+static int runNumericHack(const string& bootname, unsigned int lba, unsigned int oldLba,
+                          unsigned int (*apply)(fstream&, unsigned int, unsigned int, unsigned int),
+                          const char* label) {
+    fstream boot;
+    unsigned int bootsize;
+
+    if (!openBootReadWrite(bootname, bootsize, boot)) {
+        return ExitCode::BootOpenError;
+    }
+
+    unsigned int count = apply(boot, bootsize, lba, oldLba);
+    boot.close();
+
+    cout << label << ": " << count << " location(s) patched." << endl;
+    return ExitCode::Ok;
+}
+
+int runHack0(const string& bootname, unsigned int lba, unsigned int oldLba) {
+    return runNumericHack(bootname, lba, oldLba, applyHack0, "HACK0");
+}
+
+int runHack(const string& bootname, unsigned int lba, unsigned int oldLba) {
+    return runNumericHack(bootname, lba, oldLba, applyHack, "HACK");
+}
+
+int runHack2(const string& bootname, unsigned int lba, unsigned int oldLba) {
+    return runNumericHack(bootname, lba, oldLba, applyHack2, "HACK2");
+}
+
+int runHack3(const string& bootname, unsigned int lba, unsigned int oldLba) {
+    return runNumericHack(bootname, lba, oldLba, applyHack3, "HACK3");
+}
+
+int runDahack(const string& bootname, unsigned int lba, unsigned int oldLba) {
+    return runNumericHack(bootname, lba, oldLba, applyDahack, "DAHACK");
+}
+
+int runCdda(const string& bootname) {
+    fstream boot;
+    unsigned int bootsize;
+
+    if (!openBootReadWrite(bootname, bootsize, boot)) {
+        return ExitCode::BootOpenError;
+    }
+
+    int result = ExitCode::Ok;
+    if (!applyCdda(boot, bootsize)) {
+        result = ExitCode::BootHackError;
     }
 
     boot.close();

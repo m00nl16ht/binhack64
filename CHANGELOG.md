@@ -25,6 +25,20 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
   `patch-boot`/`patch-ip` never touch the file the other owns, that they
   compose to the same result as `patch-all`, and that interactive mode
   matches. Runs in CI via GitHub Actions on every push/PR.
+- `hack0`, `hack`, `hack2`, `hack3`, `dahack` and `cdda` subcommands:
+  scene-standard boot-binary-only patches, distinct from and independent
+  of the classic BINHACK patch (none of them touch `IP.BIN`).
+  `hack`/`hack2`/`hack3`/`dahack` are numeric LBA reference patches ported
+  from `binhacks.py` (HACK by Bero, HACK2 by Unknown, HACK3 by Pekearai,
+  DAHACK by Mr. KiMWU); `hack0` is the equivalent raw-LBA patch from
+  kikuchan's hack4 v1.5 (2001), which also bundles hack1/hack2/hack3 under
+  those names. `cdda` (Mr. KiMWU) fixes multi-track CDDA bootbins where
+  the first audio track reads as track04 instead of track01, by writing a
+  small routine near the disc's `CD001` signature — the offset math was
+  verified empirically against a real CDDA bootbin fixture, since the
+  source it's ported from computes it through a byte-order round-trip
+  that isn't obvious from reading the code. All six accept `[old-lba]`
+  (default 45000) where applicable.
 
 ### Changed
 
@@ -46,6 +60,9 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
 - `make` no longer fails outright when UPX isn't installed — packing is
   now best-effort and only attempted as part of `make dist`.
 - Translated the one remaining French comment in the codebase to English.
+- `cdda` now validates its computed patch offset stays within the file
+  before writing, refusing non-CDDA bootbins instead of writing out of
+  bounds — the source it's ported from admitted it never added this check.
 
 ## binhack32 releases
 

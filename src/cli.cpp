@@ -40,6 +40,28 @@ void printUsage(const char* progname) {
          << "  " << progname << " patch-all <boot.bin> <ip.bin> <lba>" << endl
          << "      Patch both BOOT.BIN and IP.BIN (classic BINHACK behavior)." << endl
          << endl
+         << "  " << progname << " hack0 <boot.bin> <lba> [old-lba]" << endl
+         << "      HACK0 (kikuchan): replaces every raw old-lba reference with" << endl
+         << "      lba directly (no +166/+150 offset) in the boot binary." << endl
+         << endl
+         << "  " << progname << " hack <boot.bin> <lba> [old-lba]" << endl
+         << "      HACK (Bero): replaces every (old-lba+166) reference with" << endl
+         << "      (lba+166) in the boot binary." << endl
+         << endl
+         << "  " << progname << " hack2 <boot.bin> <lba> [old-lba]" << endl
+         << "      HACK2 (Unknown): replaces every (old-lba+150) reference with" << endl
+         << "      (lba+150) in the boot binary." << endl
+         << endl
+         << "  " << progname << " hack3 <boot.bin> <lba> [old-lba]" << endl
+         << "      HACK3 (Pekearai): HACK + HACK2 combined." << endl
+         << endl
+         << "  " << progname << " dahack <boot.bin> <lba> [old-lba]" << endl
+         << "      DAHACK (Mr. KiMWU): HACK(lba) + HACK2(0)." << endl
+         << endl
+         << "  " << progname << " cdda <boot.bin>" << endl
+         << "      CDDA fix (Mr. KiMWU): fixes multi-track CDDA bootbins where" << endl
+         << "      the first audio track reads as track04 instead of track01." << endl
+         << endl
          << "  " << progname << " help" << endl
          << "      Show this help." << endl
          << endl
@@ -48,7 +70,10 @@ void printUsage(const char* progname) {
          << endl
          << "Notes:" << endl
          << "  - <lba> is the MSINFO/LBA value of the boot binary on the target" << endl
-         << "    disc image. It is ignored for Windows CE binaries." << endl;
+         << "    disc image. It is ignored for Windows CE binaries." << endl
+         << "  - [old-lba] defaults to " << HACK_DEFAULT_OLD_LBA << " (how most original discs" << endl
+         << "    were mastered before being re-burned at a new LBA)." << endl
+         << "  - hack0/hack/hack2/hack3/dahack/cdda only touch the boot binary, never IP.BIN." << endl;
 }
 
 unsigned int parseLba(const char* value) {
@@ -145,6 +170,31 @@ int runCli(int argc, char* argv[]) {
         }
         cout << BANNER << endl << endl;
         return patchAll(argv[2], argv[3], parseLba(argv[4]));
+    }
+
+    if (command == "hack0" || command == "hack" || command == "hack2" ||
+        command == "hack3" || command == "dahack") {
+        if (argc != 4 && argc != 5) {
+            cout << "Usage: " << argv[0] << " " << command << " <boot.bin> <lba> [old-lba]" << endl;
+            return ExitCode::UsageError;
+        }
+        cout << BANNER << endl << endl;
+        unsigned int lba = parseLba(argv[3]);
+        unsigned int oldLba = (argc == 5) ? parseLba(argv[4]) : HACK_DEFAULT_OLD_LBA;
+        if (command == "hack0") return runHack0(argv[2], lba, oldLba);
+        if (command == "hack") return runHack(argv[2], lba, oldLba);
+        if (command == "hack2") return runHack2(argv[2], lba, oldLba);
+        if (command == "hack3") return runHack3(argv[2], lba, oldLba);
+        return runDahack(argv[2], lba, oldLba);
+    }
+
+    if (command == "cdda") {
+        if (argc != 3) {
+            cout << "Usage: " << argv[0] << " cdda <boot.bin>" << endl;
+            return ExitCode::UsageError;
+        }
+        cout << BANNER << endl << endl;
+        return runCdda(argv[2]);
     }
 
     cout << "Unknown command: " << command << endl << endl;

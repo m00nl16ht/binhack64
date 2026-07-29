@@ -92,6 +92,17 @@ assert_byte_at_offset() {
     fi
 }
 
+assert_hex_at_offset() {
+    # offset/length are decimal, expected is a lowercase hex string (no spaces)
+    local desc="$1" file="$2" offset="$3" length="$4" expected="$5" actual
+    actual="$(od -An -tx1 -j "$offset" -N "$length" "$file" | tr -d ' \n')"
+    if [ "$actual" = "$expected" ]; then
+        ok "$desc"
+    else
+        not_ok "$desc (bytes at offset $offset: expected $expected, got $actual)"
+    fi
+}
+
 assert_contains() {
     local desc="$1" haystack="$2" needle="$3"
     case "$haystack" in
@@ -168,6 +179,72 @@ assert_byte_at_offset "patch-ip sets the OS flag to '0' for a bincon'd binary" b
 rm -f IP.BIN
 
 # -----------------------------------------------------------------------------
+echo "-- hack0 / hack / hack2 / hack3 / dahack --"
+# HACK_TEST.BIN is a synthetic fixture: 64 zero bytes with LE(45166) at
+# offset 16 (the HACK target for old-lba=45000), LE(45150) at offset 32
+# (the HACK2 target), and LE(45000) at offset 48 (the raw HACK0 target).
+# For lba=12345: HACK0 wants lba=12345=0x3039, HACK wants lba+166=12511=
+# 0x30DF, HACK2 wants lba+150=12495=0x30CF (all verified against the real
+# binary before being hardcoded here).
+
+cp "$FIXTURES/HACK_TEST.BIN" hack0.bin
+"$BIN" hack0 hack0.bin 12345 >/dev/null; rc=$?
+assert_exit_code "hack0 exits 0" 0 "$rc"
+assert_hex_at_offset "hack0 replaces the raw HACK0 marker with lba" hack0.bin 48 4 39300000
+assert_hex_at_offset "hack0 leaves the HACK marker untouched" hack0.bin 16 4 6eb00000
+assert_hex_at_offset "hack0 leaves the HACK2 marker untouched" hack0.bin 32 4 5eb00000
+
+cp "$FIXTURES/HACK_TEST.BIN" hack.bin
+"$BIN" hack hack.bin 12345 >/dev/null; rc=$?
+assert_exit_code "hack exits 0" 0 "$rc"
+assert_hex_at_offset "hack replaces the HACK marker with (lba+166)" hack.bin 16 4 df300000
+
+cp "$FIXTURES/HACK_TEST.BIN" hack2.bin
+"$BIN" hack2 hack2.bin 12345 >/dev/null; rc=$?
+assert_exit_code "hack2 exits 0" 0 "$rc"
+assert_hex_at_offset "hack2 replaces the HACK2 marker with (lba+150)" hack2.bin 32 4 cf300000
+
+cp "$FIXTURES/HACK_TEST.BIN" hack3.bin
+"$BIN" hack3 hack3.bin 12345 >/dev/null; rc=$?
+assert_exit_code "hack3 exits 0" 0 "$rc"
+
+cp "$FIXTURES/HACK_TEST.BIN" hack_then_hack2.bin
+"$BIN" hack hack_then_hack2.bin 12345 >/dev/null
+"$BIN" hack2 hack_then_hack2.bin 12345 >/dev/null
+assert_files_equal "hack3 == hack + hack2 applied in sequence" hack3.bin hack_then_hack2.bin
+
+cp "$FIXTURES/HACK_TEST.BIN" dahack.bin
+"$BIN" dahack dahack.bin 12345 >/dev/null; rc=$?
+assert_exit_code "dahack exits 0" 0 "$rc"
+assert_hex_at_offset "dahack replaces the HACK marker with (lba+166)" dahack.bin 16 4 df300000
+assert_hex_at_offset "dahack zeroes the HACK2 marker to plain 150" dahack.bin 32 4 96000000
+assert_files_differ "dahack differs from hack3 (HACK2 target differs)" dahack.bin hack3.bin
+
+cp "$FIXTURES/HACK_TEST.BIN" hack_oldlba.bin
+"$BIN" hack hack_oldlba.bin 12345 45166 >/dev/null; rc=$?
+assert_exit_code "hack with an [old-lba] override exits 0" 0 "$rc"
+assert_files_equal "a non-matching [old-lba] makes no changes" "$FIXTURES/HACK_TEST.BIN" hack_oldlba.bin
+
+# -----------------------------------------------------------------------------
+echo "-- cdda --"
+# Offset/values below were independently computed and verified with od
+# against the real fixture before being hardcoded here (see CHANGELOG).
+
+cp "$FIXTURES/CDDA.BIN" cdda.bin
+"$BIN" cdda cdda.bin >/dev/null; rc=$?
+assert_exit_code "cdda exits 0 on a real CDDA bootbin" 0 "$rc"
+assert_file_size "cdda does not change the file size" cdda.bin 296703
+assert_files_differ "cdda modifies the file" "$FIXTURES/CDDA.BIN" cdda.bin
+assert_hex_at_offset "cdda writes the routine at the computed offset" cdda.bin 208148 4 11d0224f
+assert_hex_at_offset "cdda writes (val-402) after the routine" cdda.bin 208232 4 822b048c
+assert_hex_at_offset "cdda writes (val+268) after that" cdda.bin 208236 4 202e048c
+
+cp "$FIXTURES/1ST_READ.BIN" not_cdda.bin
+"$BIN" cdda not_cdda.bin >/dev/null 2>&1; rc=$?
+assert_exit_code "cdda rejects a non-CDDA bootbin instead of writing garbage" 3 "$rc"
+assert_files_equal "cdda leaves a rejected file untouched" "$FIXTURES/1ST_READ.BIN" not_cdda.bin
+
+# -----------------------------------------------------------------------------
 echo "-- interactive mode --"
 
 cp "$FIXTURES/IP.BIN" IP.BIN
@@ -195,6 +272,15 @@ assert_exit_code "unknown subcommand" 1 "$rc"
 
 "$BIN" patch-boot does_not_exist.bin 12345 >/dev/null 2>&1; rc=$?
 assert_exit_code "patch-boot on a nonexistent file" 2 "$rc"
+
+"$BIN" hack only_one_arg >/dev/null 2>&1; rc=$?
+assert_exit_code "hack with wrong arg count" 1 "$rc"
+
+"$BIN" hack boot.bin 123 456 789 >/dev/null 2>&1; rc=$?
+assert_exit_code "hack with too many args" 1 "$rc"
+
+"$BIN" cdda >/dev/null 2>&1; rc=$?
+assert_exit_code "cdda with missing arg" 1 "$rc"
 
 # -----------------------------------------------------------------------------
 echo "-- help / --version --"

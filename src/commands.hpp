@@ -15,6 +15,8 @@
 #define __COMMANDS__HPP__
 
 #include "binhack.hpp"
+#include "hack.hpp"
+#include "cdda.hpp"
 #include <string>
 
 using namespace std;
@@ -68,5 +70,18 @@ int patchIp(const string& bootname, const string& ipname);
 
 // Patch both BOOT.BIN and IP.BIN (classic BINHACK behavior).
 int patchAll(const string& bootname, const string& ipname, unsigned int lba);
+
+// HACK0 (kikuchan), HACK (Bero), HACK2 (Unknown), HACK3 (Pekearai) and
+// DAHACK (Mr. KiMWU): alternate boot-binary-only LBA patches. None of
+// these touch IP.BIN.
+int runHack0(const string& bootname, unsigned int lba, unsigned int oldLba);
+int runHack(const string& bootname, unsigned int lba, unsigned int oldLba);
+int runHack2(const string& bootname, unsigned int lba, unsigned int oldLba);
+int runHack3(const string& bootname, unsigned int lba, unsigned int oldLba);
+int runDahack(const string& bootname, unsigned int lba, unsigned int oldLba);
+
+// CDDA fix (Mr. KiMWU): fixes multi-track CDDA bootbins. Doesn't need an
+// LBA - it locates itself from the boot binary's own CD001 signature.
+int runCdda(const string& bootname);
 
 #endif // __COMMANDS__HPP__
