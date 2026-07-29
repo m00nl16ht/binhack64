@@ -16,21 +16,19 @@
 #include <fstream>
 #include <vector>
 
-using namespace std;
-
 // Prototypes
-int filesize( istream& );
-bool isWinCE( istream&, unsigned int );
-vector<unsigned int> searchHackOffsets( istream& boot, unsigned int bootsize );
-bool isBincon( istream& boot );
-void hackBootStrap( ofstream&, unsigned int, fstream& );
-bool hackKatanaBootBinary( fstream&, unsigned int, unsigned int );
+int filesize( std::istream& );
+bool isWinCE( std::istream&, unsigned int );
+std::vector<unsigned int> searchHackOffsets( std::istream& boot, unsigned int bootsize );
+bool isBincon( std::istream& boot );
+void hackBootStrap( std::ofstream&, unsigned int, std::fstream& );
+bool hackKatanaBootBinary( std::fstream&, unsigned int, unsigned int );
 
 // Full WinCE detection, usable even without a pre-found CD001 offset:
 // tries searchHackOffsets()+isWinCE() first, and if no CD001 is found
 // (e.g. a raw pre-mastered WinCE binary) falls back to checking the
 // first 2 bytes.
-bool detectWinCE( istream& boot, unsigned int bootsize );
+bool detectWinCE( std::istream& boot, unsigned int bootsize );
 
 // -----------------------------------------------------------------------------
 // DATA DEFINITIONS

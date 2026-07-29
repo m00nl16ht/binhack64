@@ -11,6 +11,8 @@
 #include "ip_data.hpp"
 #include <string.h>
 
+using namespace std;
+
 // -----------------------------------------------------------------------------
 
 // Get length of file

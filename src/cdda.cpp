@@ -10,6 +10,8 @@
 #include "cdda.hpp"
 #include "cdda_routine.hpp"
 
+using namespace std;
+
 bool applyCdda(fstream& boot, unsigned int bootsize) {
 
     // Locate the first CD001 signature (searchHackOffsets returns index-8

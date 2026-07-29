@@ -26,6 +26,6 @@
 //
 // Returns false, leaving boot untouched, if the file is already Katana,
 // already bincon'd, bincon'd-but-not-WinCE, or too small to transform.
-bool applyBincon(fstream& boot, unsigned int bootsize);
+bool applyBincon(std::fstream& boot, unsigned int bootsize);
 
 #endif // __BINCON__HPP__

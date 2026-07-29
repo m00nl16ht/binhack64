@@ -9,6 +9,8 @@
 
 #include "commands.hpp"
 
+using namespace std;
+
 // Opens bootname read/write and gets its size, without requiring a CD001
 // signature (unlike processBootBin) - hack/hack2/hack3/dahack/cdda/bincon
 // don't all need one.

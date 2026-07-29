@@ -24,6 +24,6 @@
 //
 // Unlike the original, returns false and leaves boot untouched if the
 // computed offset doesn't look sane for this file.
-bool applyCdda(fstream& boot, unsigned int bootsize);
+bool applyCdda(std::fstream& boot, unsigned int bootsize);
 
 #endif // __CDDA__HPP__

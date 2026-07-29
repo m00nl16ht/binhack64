@@ -13,8 +13,6 @@
 
 #include <string>
 
-using namespace std;
-
 #define BACKUP_SUFFIX ".bak"
 
 // Enabled once by the CLI when --backup is present on the command line.
@@ -31,6 +29,6 @@ bool backupEnabled();
 // Returns false only if the backup was wanted but couldn't be written -
 // callers must then refuse to patch, since patching is exactly what the
 // backup was meant to guard against.
-bool ensureBackup(const string& path);
+bool ensureBackup(const std::string& path);
 
 #endif // __BACKUP__HPP__

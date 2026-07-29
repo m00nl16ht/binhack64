@@ -20,8 +20,6 @@
 
 #include <fstream>
 
-using namespace std;
-
 #define WINCE_CDDA_FIX_OFFSET 0x61C0
 
 enum class WinceCddaFixResult {
@@ -33,6 +31,6 @@ enum class WinceCddaFixResult {
 // Reads the 2 bytes at WINCE_CDDA_FIX_OFFSET in ip and classifies/applies
 // per the three cases above. Also returns Unexpected (without reading) if
 // ipsize is too small for the offset to exist.
-WinceCddaFixResult applyWinceCddaFix(fstream& ip, unsigned int ipsize);
+WinceCddaFixResult applyWinceCddaFix(std::fstream& ip, unsigned int ipsize);
 
 #endif // __WINCE_CDDA_FIX__HPP__

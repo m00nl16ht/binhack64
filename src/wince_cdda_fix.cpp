@@ -10,6 +10,8 @@
 #include "wince_cdda_fix.hpp"
 #include <cstring>
 
+using namespace std;
+
 namespace {
     const unsigned char oldBytes[2] = { 0x25, 0xC7 };
     const unsigned char newBytes[2] = { 0x09, 0x00 };

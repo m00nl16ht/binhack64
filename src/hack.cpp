@@ -10,6 +10,8 @@
 #include "hack.hpp"
 #include <cstring>
 
+using namespace std;
+
 unsigned int searchReplaceBytes(fstream& boot, unsigned int bootsize,
                                 const unsigned char* oldPattern, const unsigned char* newPattern,
                                 unsigned int patternLen) {

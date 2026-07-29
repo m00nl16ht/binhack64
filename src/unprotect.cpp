@@ -9,6 +9,8 @@
 
 #include "unprotect.hpp"
 
+using namespace std;
+
 namespace {
 
 struct UnprotectVariant {

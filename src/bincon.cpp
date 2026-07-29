@@ -10,6 +10,8 @@
 #include "bincon.hpp"
 #include <cstring>
 
+using namespace std;
+
 bool applyBincon(fstream& boot, unsigned int bootsize) {
     bool isWinCEBin = detectWinCE(boot, bootsize);
     bool isBinconedBin = isBincon(boot);

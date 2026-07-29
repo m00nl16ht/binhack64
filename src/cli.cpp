@@ -13,6 +13,8 @@
 #include <cstdlib>
 #include <cctype>
 
+using namespace std;
+
 namespace {
 
 // Set once at the top of runCli() from argv[0]'s basename, so usage text

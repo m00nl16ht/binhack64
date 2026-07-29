@@ -82,24 +82,23 @@ binhack64 check-protection <boot.bin> [id]
     all 7.
 
 binhack64 wince-cdda-fix-ip <ip.bin>
-    WinCE+CDDA fix (pitito, dreamcast-talk.com): fixes IP.BIN so CDDA
-    audio doesn't break (e.g. always replaying track 1) when converting a
-    WinCE game from GDI to CDI. Unlike every command above, this patches
-    IP.BIN itself, not the boot binary - run it after binhack-ip/binhack.
+    WinCE+CDDA fix (pitito): fixes IP.BIN so CDDA audio doesn't break
+    (e.g. always replaying track 1) when converting a WinCE game from
+    GDI to CDI. Unlike every command above, this patches IP.BIN itself,
+    not the boot binary: run it after binhack-ip/binhack.
 
 binhack64 help
     Show usage. Also accepted as --help or -h.
 
 binhack64 version
     Show version information. Also accepted as --version or -v.
-```
 
 Options:
 
-```
 --backup
     Before patching, copy each file the command modifies to <file>.bak.
-    May be placed anywhere on the command line.
+    May be placed anywhere on the command line. An existing backup is
+    kept, so it still holds the original after several patches.
 ```
 
 `<lba>` is the MSINFO/LBA value of the boot binary on the target disc image
@@ -110,20 +109,12 @@ Every command patches the files you name, in place, and reads nothing you
 didn't name. That includes `IP.BIN`: unlike `binhack32` and the original
 `BINHACK.EXE`, which silently read a template called `IP.BIN` from the
 current directory and wrote the result somewhere else, binhack64 patches
-whichever bootsector you pass it. Keep a pristine template by copying it
-first, exactly as you already would for `BOOT.BIN`:
-
-```
-cp IP.BIN mygame.ip
-binhack64 binhack 1ST_READ.BIN mygame.ip 11702
-```
-
+whichever bootsector you pass it, exactly as it always did for `BOOT.BIN`.
 A bootsector that doesn't exist, or that isn't a full 32768 bytes, is an
 error rather than a silently truncated result.
 
-Since everything is patched in place, `--backup` keeps a copy of each file
-before it's touched. An existing `.bak` is never overwritten, so it still
-holds the original after a chain of patches over the same file:
+Use `--backup` to keep the originals. An existing `.bak` is never
+overwritten, so it still holds the untouched file after a chain of patches:
 
 ```
 binhack64 --backup dahack 1ST_READ.BIN 35500   # creates 1ST_READ.BIN.bak
@@ -131,11 +122,11 @@ binhack64 --backup cdda 1ST_READ.BIN           # keeps the existing .bak
 ```
 
 `hack0`/`hack1`/`hack2`/`hack3`/`dahack`/`cdda`/`bincon`/`unprotect` are
-alternate scene-standard patches — unlike `binhack`/`binhack-boot`/
+alternate scene-standard patches; unlike `binhack`/`binhack-boot`/
 `binhack-ip`, they only ever touch the boot binary, never `IP.BIN`.
 (`wince-cdda-fix-ip` is the one exception: it only touches `IP.BIN`, and is
 meant to run after one of those.) `[old-lba]` defaults to 45000, how most
-original discs were mastered. `cdda` needs no LBA at all — it locates
+original discs were mastered. `cdda` needs no LBA at all: it locates
 itself from the boot binary's own `CD001` signature. Unlike the original
 tools, `cdda` and `bincon` both refuse to write when the file doesn't
 look like a valid target.
@@ -156,10 +147,10 @@ look like a valid target.
 symptom at a fixed `IP.BIN` offset. The same forum thread it's ported from
 also documents many per-game, per-region fixes to individual games' own
 `.exe`/`.dll` files (Armada, Worms Pinball, Next Tetris, Sega Rally 2,
-and more) — those are out of scope for binhack64 (a `BOOT.BIN`/`IP.BIN`
+and more): those are out of scope for binhack64 (a `BOOT.BIN`/`IP.BIN`
 tool, not a per-title game patch database) but are real and useful if you
 need them: see the thread at
-[dreamcast-talk.com](https://www.dreamcast-talk.com/forum/viewtopic.php?t=17407).
+[Dreamcast-Talk](https://www.dreamcast-talk.com/forum/viewtopic.php?t=17407).
 
 ## Example: a typical multi-track (DA) game workflow
 
@@ -167,10 +158,9 @@ Documented in the original GDK toolkit's own readme, for a CDDA game where
 session 2 starts at a shifted LBA (e.g. 35500):
 
 ```
-cp IP.BIN mygame.ip
-binhack64 dahack 1ST_READ.BIN 35500
-binhack64 cdda 1ST_READ.BIN
-binhack64 binhack 1ST_READ.BIN mygame.ip 35500
+binhack64 --backup dahack 1ST_READ.BIN 35500
+binhack64 --backup cdda 1ST_READ.BIN
+binhack64 --backup binhack 1ST_READ.BIN IP.BIN 35500
 ```
 
 ## Building
@@ -213,7 +203,7 @@ patch method.
 ## Disclaimer
 
 These patches mostly date back to 1999-2001, targeting a console that's
-been out of production for over two decades, they're kept here for
-preservation purposes, not tested against every game they
-were ever used on, and come with no warranty. As the original GDK toolkit's
-own readme put it: *"Please use as self-responsibility."*
+been out of production for over two decades. They're kept here for
+preservation purposes: they haven't been tested against every game they
+were ever used on, and they come with no warranty. As the original GDK
+toolkit's own readme put it: *"Please use as self-responsibility."*
