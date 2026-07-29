@@ -22,8 +22,8 @@ unsigned int searchReplaceBytes(fstream& boot, unsigned int bootsize,
     boot.seekg(0, ios::beg);
     boot.read(bootbuf, bootsize);
 
-    // Non-overlapping left-to-right scan, matching Python's str.replace:
-    // a match consumes patternLen bytes before the scan resumes.
+    // Non-overlapping left-to-right scan: a match consumes patternLen
+    // bytes before the scan resumes.
     unsigned int replacements = 0;
     unsigned int i = 0;
     while (i + patternLen <= bootsize) {

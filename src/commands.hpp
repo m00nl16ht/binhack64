@@ -4,11 +4,10 @@
 	Licensed under the GNU General Public License v3 (GPLv3).
 	See the LICENSE file for the full license text.
 
-	BINHACK patch commands: mid-level building blocks and high-level
-	command entry points for the classic BINHACK patch (LBA hack + IP.BIN
-	bootstrap rewrite). The mid-level functions are exposed here, not
-	hidden as static in commands.cpp, so the interactive CLI (cli.cpp) can
-	interleave its prompts between them the same way the legacy tool did.
+	Command entry points, plus the mid-level building blocks they are
+	composed from. Those are exposed here rather than kept static so the
+	interactive CLI can interleave its prompts between them, the way the
+	legacy tool did.
 */
 
 #ifndef __COMMANDS__HPP__
@@ -87,7 +86,7 @@ int runDahack(const string& bootname, unsigned int lba, unsigned int oldLba);
 // LBA - it locates itself from the boot binary's own CD001 signature.
 int runCdda(const string& bootname);
 
-// bincon (dopefish/echelon): voodoo to make WinCE games boot.
+// bincon (dopefish): voodoo to make WinCE games boot.
 int runBincon(const string& bootname);
 
 // unprotect: removes one of 7 non-LBA copy protections (variant 0-6).

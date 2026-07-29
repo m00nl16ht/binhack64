@@ -116,8 +116,9 @@ bool loadIpBin(char* buffer) {
 
     ifstream ipbin;
 
-    // Opening the IP.BIN
-    ipbin.open(BOOTSECTOR_NAME, ios::in);
+    // Opening the IP.BIN (binary: without it, Windows text mode eats CR
+    // bytes and shifts the rest of the bootsector)
+    ipbin.open(BOOTSECTOR_NAME, ios::in | ios::binary);
     if (ipbin.fail()) {
         cout << "Error opening ip file." << endl;
         return false;

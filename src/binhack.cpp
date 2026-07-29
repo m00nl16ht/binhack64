@@ -90,9 +90,8 @@ bool detectWinCE( istream& boot, unsigned int bootsize ) {
 	}
 
 	// No CD001 found (e.g. a raw pre-mastered WinCE binary): fall back to
-	// checking the first 2 bytes, matching binhacks.py's _checkWinCE. A
-	// bincon'd file's marker also counts, since bincon'ing doesn't change
-	// what kind of binary it fundamentally is.
+	// checking the first 2 bytes. A bincon'd file's marker also counts,
+	// since bincon'ing doesn't change what kind of binary it is.
 	char first2[ BOOT_HACK_RAW_WINCE_CHECK_SIZE ];
 	boot.seekg( 0, ios::beg );
 	boot.read( first2, BOOT_HACK_RAW_WINCE_CHECK_SIZE );

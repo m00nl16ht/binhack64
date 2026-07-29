@@ -4,18 +4,15 @@
 	Licensed under the GNU General Public License v3 (GPLv3).
 	See the LICENSE file for the full license text.
 
-	WinCE+CDDA IP.BIN fix, by pitito (dreamcast-talk.com, thread started
-	2024-04-11: "Wince+CDDA"). Fixes WinCE games whose CDDA audio breaks
-	when converted from GDI to CDI (typically always replaying track 1).
+	WinCE+CDDA IP.BIN fix by pitito. Fixes WinCE games whose CDDA audio
+	breaks when converted from GDI to CDI (typically always replaying
+	track 1).
 
 	Unlike every other patch in this codebase, this one targets IP.BIN
 	itself, not the boot binary - the affected byte sits inside the
-	exploit/bootstrap payload the classic BINHACK patch writes (see
+	bootstrap payload the classic BINHACK patch writes (see
 	BOOTSECTOR_HACK_OFFSET in binhack.hpp), not in a vanilla IP.BIN, so it
-	only makes sense to run after binhack-ip/binhack. Verified against
-	this codebase's own output: a real binhack-ip-produced IP.BIN has
-	`25 C7` at WINCE_CDDA_FIX_OFFSET, at relative offset 0x2ABC into the
-	11500-byte bootsector_hack_data payload.
+	only makes sense to run after binhack-ip/binhack.
 */
 
 #ifndef __WINCE_CDDA_FIX__HPP__

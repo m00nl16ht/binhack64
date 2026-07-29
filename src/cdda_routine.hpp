@@ -5,10 +5,8 @@
 	See the LICENSE file for the full license text.
 
 	CDDA fix payload (Mr. KiMWU): the raw routine cdda.cpp writes into the
-	boot binary near its first CD001 signature. Kept in its own header,
-	separate from cdda.hpp, for the same reason as ip_data.hpp: keeps the
-	declarations readable instead of burying them under a byte literal.
-	Ported from binhacks.py's base64-encoded _cddaRoutine64.
+	boot binary near its first CD001 signature. Kept in its own header so
+	the byte literal doesn't bury cdda.hpp's declarations.
 
 	Included only by cdda.cpp.
 */

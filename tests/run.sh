@@ -179,7 +179,7 @@ assert_byte_at_offset "binhack-ip sets the OS flag to '0' for a bincon'd binary"
 rm -f IP.BIN
 
 # -----------------------------------------------------------------------------
-echo "-- wince-cdda-fix --"
+echo "-- wince-cdda-fix-ip --"
 # ip_all.hak (from the binhack section above) is a real binhack-ip-produced
 # IP.BIN - the fix only makes sense against real hacked output, not a
 # hand-built fixture, since the affected byte lives inside the exploit
@@ -188,22 +188,44 @@ echo "-- wince-cdda-fix --"
 cp ip_all.hak wince_cdda_apply.bin
 assert_hex_at_offset "sanity: real binhack output has the expected marker" \
     wince_cdda_apply.bin 25024 2 25c7
-"$BIN" wince-cdda-fix wince_cdda_apply.bin >/dev/null; rc=$?
-assert_exit_code "wince-cdda-fix exits 0" 0 "$rc"
-assert_hex_at_offset "wince-cdda-fix patches the marker to 09 00" \
+"$BIN" wince-cdda-fix-ip wince_cdda_apply.bin >/dev/null; rc=$?
+assert_exit_code "wince-cdda-fix-ip exits 0" 0 "$rc"
+assert_hex_at_offset "wince-cdda-fix-ip patches the marker to 09 00" \
     wince_cdda_apply.bin 25024 2 0900
 
-"$BIN" wince-cdda-fix wince_cdda_apply.bin >/dev/null; rc=$?
-assert_exit_code "wince-cdda-fix is idempotent (exit 0 on a second run)" 0 "$rc"
-assert_hex_at_offset "wince-cdda-fix leaves an already-patched file unchanged" \
+"$BIN" wince-cdda-fix-ip wince_cdda_apply.bin >/dev/null; rc=$?
+assert_exit_code "wince-cdda-fix-ip is idempotent (exit 0 on a second run)" 0 "$rc"
+assert_hex_at_offset "wince-cdda-fix-ip leaves an already-patched file unchanged" \
     wince_cdda_apply.bin 25024 2 0900
 
 cp "$FIXTURES/IP.BIN" wince_cdda_unrelated.bin
 cp wince_cdda_unrelated.bin wince_cdda_unrelated_ref.bin
-"$BIN" wince-cdda-fix wince_cdda_unrelated.bin >/dev/null 2>&1; rc=$?
-assert_exit_code "wince-cdda-fix rejects a non-binhack-patched IP.BIN" 5 "$rc"
-assert_files_equal "wince-cdda-fix leaves a rejected file untouched" \
+"$BIN" wince-cdda-fix-ip wince_cdda_unrelated.bin >/dev/null 2>&1; rc=$?
+assert_exit_code "wince-cdda-fix-ip rejects a non-binhack-patched IP.BIN" 5 "$rc"
+assert_files_equal "wince-cdda-fix-ip leaves a rejected file untouched" \
     wince_cdda_unrelated_ref.bin wince_cdda_unrelated.bin
+
+# -----------------------------------------------------------------------------
+echo "-- binhack-ip reads IP.BIN as binary --"
+# Regression test: IP.BIN was once opened in text mode, so on Windows a
+# CR byte was silently eaten and every byte after it shifted left by one.
+# This synthetic template carries a CR LF pair and a 0x1A well outside any
+# region binhack-ip rewrites, so they must survive verbatim.
+
+mkdir -p binarymode && cd binarymode
+cp "$FIXTURES/1ST_READ.BIN" .
+perl -e 'my $d = "A" x 32768;
+         substr($d, 0x100, 2) = "\r\n";
+         substr($d, 0x200, 1) = "\x1A";
+         open(F, ">:raw", "IP.BIN"); print F $d; close(F);'
+"$BIN" binhack-ip 1ST_READ.BIN binarymode.hak >/dev/null; rc=$?
+assert_exit_code "binhack-ip on a CR-bearing IP.BIN exits 0" 0 "$rc"
+assert_file_size "binhack-ip output is a full bootsector" binarymode.hak 32768
+assert_hex_at_offset "binhack-ip preserves a CR LF pair in IP.BIN" \
+    binarymode.hak 256 2 0d0a
+assert_hex_at_offset "binhack-ip preserves a 0x1A byte in IP.BIN" \
+    binarymode.hak 512 1 1a
+cd ..
 
 # -----------------------------------------------------------------------------
 echo "-- hack0 / hack / hack2 / hack3 / dahack --"
@@ -225,6 +247,11 @@ cp "$FIXTURES/HACK_TEST.BIN" hack.bin
 "$BIN" hack hack.bin 12345 >/dev/null; rc=$?
 assert_exit_code "hack exits 0" 0 "$rc"
 assert_hex_at_offset "hack replaces the HACK marker with (lba+166)" hack.bin 16 4 df300000
+
+cp "$FIXTURES/HACK_TEST.BIN" hack1_alias.bin
+"$BIN" hack1 hack1_alias.bin 12345 >/dev/null; rc=$?
+assert_exit_code "hack1 exits 0" 0 "$rc"
+assert_files_equal "hack1 is an alias for hack" hack.bin hack1_alias.bin
 
 cp "$FIXTURES/HACK_TEST.BIN" hack2.bin
 "$BIN" hack2 hack2.bin 12345 >/dev/null; rc=$?
@@ -385,8 +412,8 @@ assert_exit_code "hack with too many args" 1 "$rc"
 "$BIN" cdda >/dev/null 2>&1; rc=$?
 assert_exit_code "cdda with missing arg" 1 "$rc"
 
-"$BIN" wince-cdda-fix >/dev/null 2>&1; rc=$?
-assert_exit_code "wince-cdda-fix with missing arg" 1 "$rc"
+"$BIN" wince-cdda-fix-ip >/dev/null 2>&1; rc=$?
+assert_exit_code "wince-cdda-fix-ip with missing arg" 1 "$rc"
 
 # -----------------------------------------------------------------------------
 echo "-- help / --version --"
@@ -398,6 +425,13 @@ assert_contains "help output mentions usage" "$out" "Usage:"
 out="$("$BIN" --version 2>&1)"; rc=$?
 assert_exit_code "--version exits 0" 0 "$rc"
 assert_contains "--version output mentions binhack64" "$out" "binhack64"
+
+out="$("$BIN" version 2>&1)"; rc=$?
+assert_exit_code "version verb exits 0" 0 "$rc"
+assert_contains "version verb output mentions binhack64" "$out" "binhack64"
+
+out="$("$BIN" -v 2>&1)"; rc=$?
+assert_exit_code "-v exits 0" 0 "$rc"
 
 # -----------------------------------------------------------------------------
 echo

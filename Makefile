@@ -21,13 +21,23 @@ OBJ_DIR = obj/
 SRC_DIR = src/
 BIN_DIR = bin/
 
-# files
+# Files
 BIN = binhack64
 TARGET = $(BIN_DIR)$(BIN)$(OS:Windows_NT=.exe)
 LIBS =
-OBJS = $(OBJ_DIR)main.o $(OBJ_DIR)cli.o $(OBJ_DIR)commands.o $(OBJ_DIR)binhack.o $(OBJ_DIR)hack.o $(OBJ_DIR)cdda.o $(OBJ_DIR)bincon.o $(OBJ_DIR)unprotect.o $(OBJ_DIR)wince_cdda_fix.o $(OS:Windows_NT=$(OBJ_DIR)version.o)
+OBJ_NAMES = main.o\
+	cli.o\
+	commands.o\
+	binhack.o\
+	hack.o\
+	cdda.o\
+	bincon.o\
+	unprotect.o\
+	wince_cdda_fix.o\
+	$(OS:Windows_NT=version.o)
+OBJS = $(addprefix $(OBJ_DIR),$(OBJ_NAMES))
 
-# go ! (same recipe on every platform, no per-OS target needed)
+# Let's go!
 all : $(OBJS) | $(BIN_DIR)
 	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
 
@@ -52,7 +62,7 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp | $(OBJ_DIR)
 $(OBJ_DIR)%.o: $(SRC_DIR)%.rc | $(OBJ_DIR)
 	$(WINDRES) -i $< -o $@
 
-# create output directories on demand (not tracked in git, see .gitignore)
+# create output directories on demand
 $(OBJ_DIR) $(BIN_DIR):
 	mkdir -p $@
 

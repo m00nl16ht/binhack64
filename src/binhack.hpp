@@ -5,11 +5,8 @@
 	See the LICENSE file for the full license text.
 
 	Low-level BINHACK patch engine: data definitions and prototypes.
-	binhack64 is a modernized, 64-bit-native continuation of binhack32
-	(FamilyGuy and contributors, since 2010), itself a clone of the
-	original 16-bit BINHACK.EXE. This file only covers the classic BINHACK patch
-	(LBA hack + IP.BIN bootstrap rewrite); other patches get their own
-	engine files.
+	Covers the classic BINHACK patch only (LBA hack + IP.BIN bootstrap
+	rewrite); other patches get their own engine files.
 */
 
 #ifndef __BINHACK__HPP__
@@ -32,7 +29,7 @@ bool hackKatanaBootBinary( fstream&, unsigned int, unsigned int );
 // Full WinCE detection, usable even without a pre-found CD001 offset:
 // tries searchHackOffsets()+isWinCE() first, and if no CD001 is found
 // (e.g. a raw pre-mastered WinCE binary) falls back to checking the
-// first 2 bytes, matching binhacks.py's _checkWinCE.
+// first 2 bytes.
 bool detectWinCE( istream& boot, unsigned int bootsize );
 
 // -----------------------------------------------------------------------------
@@ -72,7 +69,6 @@ const unsigned char rawwincecheck_ref[ BOOT_HACK_RAW_WINCE_CHECK_SIZE ] = { 0xD6
 #define BOOTSECTOR_HACK_OFFSET 0x3704
 
 // The bootsector_hack_data payload and its size (BOOTSECTOR_HACK_DATA_SIZE)
-// live in ip_data.hpp (included only by binhack.cpp) to keep this header
-// readable.
+// live in ip_data.hpp, included only by binhack.cpp.
 
 #endif // __BINHACK__HPP__

@@ -16,9 +16,8 @@ namespace {
 const char* BANNER = "IP.BIN/BOOT.BIN Selfboot Hacker - binhack64";
 
 // Set once at the top of runCli() from argv[0]'s basename, so usage text
-// reflects the actual invoked filename (e.g. if renamed for compatibility
-// with old scripts, matching how the original 16-bit BINHACK.EXE could be
-// renamed) instead of a hardcoded name or a full, possibly-long path.
+// reflects the actual invoked filename rather than a hardcoded name or a
+// full path.
 string PROGNAME = "binhack64";
 
 string basename(const string& path) {
@@ -55,8 +54,8 @@ void printUsage() {
          << "      HACK0 (kikuchan): replaces every raw old-lba reference with" << endl
          << "      lba directly (no +166/+150 offset) in the boot binary." << endl
          << endl
-         << "  " << PROGNAME << " hack <boot.bin> <lba> [old-lba]" << endl
-         << "      HACK (Bero): replaces every (old-lba+166) reference with" << endl
+         << "  " << PROGNAME << " hack|hack1 <boot.bin> <lba> [old-lba]" << endl
+         << "      HACK1 (Bero): replaces every (old-lba+166) reference with" << endl
          << "      (lba+166) in the boot binary." << endl
          << endl
          << "  " << PROGNAME << " hack2 <boot.bin> <lba> [old-lba]" << endl
@@ -64,10 +63,10 @@ void printUsage() {
          << "      (lba+150) in the boot binary." << endl
          << endl
          << "  " << PROGNAME << " hack3 <boot.bin> <lba> [old-lba]" << endl
-         << "      HACK3 (Pekearai): HACK + HACK2 combined." << endl
+         << "      HACK3 (Pekearai): HACK1 + HACK2 combined." << endl
          << endl
          << "  " << PROGNAME << " dahack <boot.bin> <lba> [old-lba]" << endl
-         << "      DAHACK (Mr. KiMWU): HACK(lba) + HACK2(0)." << endl
+         << "      DAHACK (Mr. KiMWU): HACK1(lba) + HACK2(0)." << endl
          << endl
          << "  " << PROGNAME << " cdda <boot.bin>" << endl
          << "      CDDA fix (Mr. KiMWU): fixes multi-track CDDA bootbins where" << endl
@@ -87,17 +86,17 @@ void printUsage() {
          << "      pattern is present, without modifying the file. Omit <id> to" << endl
          << "      scan all 7." << endl
          << endl
-         << "  " << PROGNAME << " wince-cdda-fix <ip.bin>" << endl
+         << "  " << PROGNAME << " wince-cdda-fix-ip <ip.bin>" << endl
          << "      WinCE+CDDA fix (pitito): fixes IP.BIN so CDDA audio doesn't" << endl
          << "      break when converting a WinCE game from GDI to CDI. Unlike" << endl
          << "      every other command above, this patches IP.BIN itself - run" << endl
          << "      it after binhack-ip/binhack, not instead of." << endl
          << endl
          << "  " << PROGNAME << " help" << endl
-         << "      Show this help." << endl
+         << "      Show this help (--help, -h)." << endl
          << endl
-         << "  " << PROGNAME << " --version" << endl
-         << "      Show version information." << endl
+         << "  " << PROGNAME << " version" << endl
+         << "      Show version information (--version, -v)." << endl
          << endl
          << "Notes:" << endl
          << "  - <lba> is the MSINFO/LBA value of the boot binary on the target" << endl
@@ -105,7 +104,7 @@ void printUsage() {
          << "  - [old-lba] defaults to " << HACK_DEFAULT_OLD_LBA << " (how most original discs" << endl
          << "    were mastered before being re-burned at a new LBA)." << endl
          << "  - hack0/hack/hack2/hack3/dahack/cdda/bincon/unprotect only touch the" << endl
-         << "    boot binary, never IP.BIN. wince-cdda-fix is the opposite: it" << endl
+         << "    boot binary, never IP.BIN. wince-cdda-fix-ip is the opposite: it" << endl
          << "    only touches IP.BIN, never the boot binary." << endl;
 }
 
@@ -115,8 +114,8 @@ unsigned int parseLba(const char* value) {
 
 // Reproduces the original interactive prompt sequence: binary name, then
 // bootsector name, then (only if not WinCE) the msinfo/LBA value. Uses the
-// mid-level building blocks directly, since runBinhack() alone can't ask for
-// the LBA only after WinCE detection.
+// mid-level building blocks directly, since runBinhack() can't defer the
+// LBA prompt until after WinCE detection.
 int runInteractive() {
     fstream boot;
     unsigned int bootsize;
@@ -173,7 +172,7 @@ int runCli(int argc, char* argv[]) {
 
     string command = argv[1];
 
-    if (command == "--version" || command == "-v") {
+    if (command == "version" || command == "--version" || command == "-v") {
         printVersion();
         return ExitCode::Ok;
     }
@@ -210,8 +209,8 @@ int runCli(int argc, char* argv[]) {
         return runBinhack(argv[2], argv[3], parseLba(argv[4]));
     }
 
-    if (command == "hack0" || command == "hack" || command == "hack2" ||
-        command == "hack3" || command == "dahack") {
+    if (command == "hack0" || command == "hack" || command == "hack1" ||
+        command == "hack2" || command == "hack3" || command == "dahack") {
         if (argc != 4 && argc != 5) {
             cout << "Usage: " << PROGNAME << " " << command << " <boot.bin> <lba> [old-lba]" << endl;
             return ExitCode::UsageError;
@@ -220,7 +219,7 @@ int runCli(int argc, char* argv[]) {
         unsigned int lba = parseLba(argv[3]);
         unsigned int oldLba = (argc == 5) ? parseLba(argv[4]) : HACK_DEFAULT_OLD_LBA;
         if (command == "hack0") return runHack0(argv[2], lba, oldLba);
-        if (command == "hack") return runHack(argv[2], lba, oldLba);
+        if (command == "hack" || command == "hack1") return runHack(argv[2], lba, oldLba);
         if (command == "hack2") return runHack2(argv[2], lba, oldLba);
         if (command == "hack3") return runHack3(argv[2], lba, oldLba);
         return runDahack(argv[2], lba, oldLba);
@@ -275,9 +274,9 @@ int runCli(int argc, char* argv[]) {
         return runCheckProtection(argv[2], variant);
     }
 
-    if (command == "wince-cdda-fix") {
+    if (command == "wince-cdda-fix-ip") {
         if (argc != 3) {
-            cout << "Usage: " << PROGNAME << " wince-cdda-fix <ip.bin>" << endl;
+            cout << "Usage: " << PROGNAME << " wince-cdda-fix-ip <ip.bin>" << endl;
             return ExitCode::UsageError;
         }
         cout << BANNER << endl << endl;
