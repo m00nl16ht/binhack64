@@ -50,12 +50,10 @@ OBJS = $(addprefix $(OBJ_DIR),$(OBJ_NAMES))
 all : $(OBJS) | $(BIN_DIR)
 	$(CC) -o $(TARGET) $(OBJS) $(CPPFLAGS) $(LIBS)
 
-# Strip and compress the already-built $(TARGET) for distribution. Build
-# first, then package it, e.g.:
-#   make && make dist
+# Build, then strip and compress $(TARGET) for distribution.
 # Packing is best-effort: if upx isn't installed, dist still leaves you
 # with a stripped (just uncompressed) binary.
-dist :
+dist : all
 	$(STRIP) $(TARGET)
 	-$(PACKER) $(PACKEROPT) $(TARGET)
 
