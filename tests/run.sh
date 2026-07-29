@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # binhack64 - Dreamcast IP.BIN/BOOT.BIN Selfboot Hacker
-# Copyright (C) FamilyGuy and contributors
+# Copyright (C) 2010-2026 FamilyGuy and contributors
 # Licensed under the GNU General Public License v3 (GPLv3).
 # See the LICENSE file for the full license text.
 #

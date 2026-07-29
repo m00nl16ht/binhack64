@@ -1,6 +1,6 @@
 /*
 	binhack64 - Dreamcast IP.BIN/BOOT.BIN Selfboot Hacker
-	Copyright (C) FamilyGuy and contributors
+	Copyright (C) 2010-2026 FamilyGuy and contributors
 	Licensed under the GNU General Public License v3 (GPLv3).
 	See the LICENSE file for the full license text.
 
@@ -29,7 +29,7 @@ string basename(const string& path) {
 void printVersion() {
     cout << BANNER << endl
          << "Modernized 64-bit BINHACK clone for the Sega Dreamcast." << endl
-         << "Copyright (C) FamilyGuy and contributors." << endl
+         << "Copyright (C) 2010-2026 FamilyGuy and contributors." << endl
          << "Licensed under the GNU General Public License v3 (GPLv3)." << endl;
 }
 
