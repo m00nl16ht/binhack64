@@ -58,66 +58,59 @@ void printUsage() {
     cout << "Usage:" << endl
          << "  " << PROGNAME << endl
          << "      Patch both BOOT.BIN (1ST_READ.BIN) and IP.BIN (classic binhack" << endl
-         << "      behavior), in interactive mode: prompts for the filenames and" << endl
-         << "      the LBA" << endl
+         << "      behavior), in interactive mode: prompts for the filenames and the" << endl
+         << "      LBA" << endl
          << endl
          << "  " << PROGNAME << " binhack-boot <boot.bin> <lba>" << endl
          << "      Patch BOOT.BIN (1ST_READ.BIN) only: writes the LBA hack" << endl
          << endl
          << "  " << PROGNAME << " binhack-ip <boot.bin> <ip.bin>" << endl
-         << "      Patch IP.BIN only: writes region/VGA/bincon flags and the" << endl
-         << "      BOOT.BIN size. <ip.bin> is patched in place" << endl
+         << "      Patch IP.BIN only: writes region/VGA/bincon flags and the BOOT.BIN" << endl
+         << "      size. <ip.bin> is patched in place" << endl
          << endl
          << "  " << PROGNAME << " binhack <boot.bin> <ip.bin> <lba>" << endl
-         << "      Patch both BOOT.BIN and IP.BIN in place (classic binhack" << endl
-         << "      behavior)" << endl
+         << "      Patch both BOOT.BIN and IP.BIN in place (classic binhack behavior)" << endl
          << endl
          << "  " << PROGNAME << " hack0 <boot.bin> <lba> [old-lba]" << endl
-         << "      HACK0 (by kikuchan, from hack4 v1.5, 2001/05/04): replaces" << endl
-         << "      every raw old-lba reference with lba directly (no +166/+150" << endl
-         << "      offset)" << endl
+         << "      HACK0 (by kikuchan, from hack4 v1.5, 2001/05/04): replaces every raw" << endl
+         << "      old-lba reference with lba directly (no +166/+150 offset)" << endl
          << endl
          << "  " << PROGNAME << " hack1|hack <boot.bin> <lba> [old-lba]" << endl
-         << "      HACK1 (by Bero): replaces every (old-lba+166) reference with" << endl
-         << "      (lba+166)" << endl
+         << "      HACK1 (by Bero): replaces every (old-lba+166) reference with (lba+166)" << endl
          << endl
          << "  " << PROGNAME << " hack2 <boot.bin> <lba> [old-lba]" << endl
-         << "      HACK2 (by Unknown): replaces every (old-lba+150) reference" << endl
-         << "      with (lba+150)" << endl
+         << "      HACK2 (by Unknown): replaces every (old-lba+150) reference with" << endl
+         << "      (lba+150)" << endl
          << endl
          << "  " << PROGNAME << " hack3 <boot.bin> <lba> [old-lba]" << endl
-         << "      HACK3 (by Pekearai / Mr.KiMWU, 2001-02-23): HACK1 + HACK2" << endl
-         << "      combined" << endl
+         << "      HACK3 (by Pekearai / Mr.KiMWU, 2001-02-23): HACK1 + HACK2 combined" << endl
          << endl
          << "  " << PROGNAME << " dahack <boot.bin> <lba> [old-lba]" << endl
          << "      DAHACK (by Mr.KiMWU, 2001-02-23): HACK1(lba) + HACK2(0)" << endl
          << endl
          << "  " << PROGNAME << " cdda <boot.bin>" << endl
-         << "      CDDA fix (by Mr.KiMWU, 2001-02-23): fixes multi-track CDDA" << endl
-         << "      bootbins where the first audio track reads as track04 instead" << endl
-         << "      of track01" << endl
+         << "      CDDA fix (by Mr.KiMWU, 2001-02-23): fixes multi-track CDDA bootbins" << endl
+         << "      where the first audio track reads as track04 instead of track01" << endl
          << endl
          << "  " << PROGNAME << " bincon <boot.bin>" << endl
-         << "      bincon (by dopefish, 7/28/00): voodoo to make a raw WinCE boot" << endl
-         << "      binary bootable. Run binhack-ip afterward to also set IP.BIN's" << endl
-         << "      OS flag: it detects bincon'd binaries automatically, no" << endl
-         << "      separate flag needed" << endl
+         << "      bincon (by dopefish, 7/28/00): voodoo to make a raw WinCE boot binary" << endl
+         << "      bootable. Run binhack-ip afterward to also set IP.BIN's OS flag: it" << endl
+         << "      detects bincon'd binaries automatically, no separate flag needed" << endl
          << endl
          << "  " << PROGNAME << " unprotect <boot.bin> <id>" << endl
-         << "      Removes one of 7 non-LBA copy protections. <id> is 0-6 or" << endl
-         << "      \"jsr\" (alias for 6); see README.md for the full credited list" << endl
+         << "      Removes one of 7 non-LBA copy protections. <id> is 0-6 or \"jsr\"" << endl
+         << "      (alias for 6); see README.md for the full credited list" << endl
          << endl
          << "  " << PROGNAME << " check-protection <boot.bin> [id]" << endl
-         << "      Read-only: reports whether <id>'s original and/or" << endl
-         << "      already-cracked pattern is present, without modifying the" << endl
-         << "      file. Omit <id> to scan all 7 recognized protections" << endl
+         << "      Read-only: reports whether <id>'s original and/or already-cracked" << endl
+         << "      pattern is present, without modifying the file. Omit <id> to scan" << endl
+         << "      all 7 recognized protections" << endl
          << endl
          << "  " << PROGNAME << " wince-cdda-fix-ip <ip.bin>" << endl
-         << "      WinCE+CDDA fix (by pitito): fixes IP.BIN so CDDA audio doesn't" << endl
-         << "      break (e.g. always replaying track 1) when converting a WinCE" << endl
-         << "      game from GDI to CDI. Unlike every command above, this patches" << endl
-         << "      IP.BIN itself, not the boot binary: run it after" << endl
-         << "      binhack-ip/binhack" << endl
+         << "      WinCE+CDDA fix (by pitito): fixes IP.BIN so CDDA audio doesn't break" << endl
+         << "      (e.g. always replaying track 1) when converting a WinCE game from GDI" << endl
+         << "      to CDI. Unlike every command above, this patches IP.BIN itself, not" << endl
+         << "      the boot binary: run it after binhack-ip/binhack" << endl
          << endl
          << "  " << PROGNAME << " help" << endl
          << "      Show usage. Also accepted as --help or -h" << endl
@@ -128,10 +121,10 @@ void printUsage() {
          << "Options:" << endl
          << endl
          << "  --backup" << endl
-         << "      Before patching, copy each file the command modifies to" << endl
-         << "      <file>" << BACKUP_SUFFIX << ". May be placed anywhere on the command line. An" << endl
-         << "      existing backup is kept, so it still holds the original after" << endl
-         << "      several patches" << endl;
+         << "      Before patching, copy each file the command modifies to <file>"
+         << BACKUP_SUFFIX << "." << endl
+         << "      May be placed anywhere on the command line. An existing backup is" << endl
+         << "      kept, so it still holds the original after several patches" << endl;
 }
 
 unsigned int parseLba(const char* value) {

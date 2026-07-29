@@ -34,7 +34,8 @@ as it was.
 ```
 binhack64
     Patch both BOOT.BIN (1ST_READ.BIN) and IP.BIN (classic binhack
-    behavior), in interactive mode: prompts for the filenames and the LBA
+    behavior), in interactive mode: prompts for the filenames and the
+    LBA
 
 binhack64 binhack-boot <boot.bin> <lba>
     Patch BOOT.BIN (1ST_READ.BIN) only: writes the LBA hack
@@ -54,7 +55,8 @@ binhack64 hack1|hack <boot.bin> <lba> [old-lba]
     HACK1 (by Bero): replaces every (old-lba+166) reference with (lba+166)
 
 binhack64 hack2 <boot.bin> <lba> [old-lba]
-    HACK2 (by Unknown): replaces every (old-lba+150) reference with (lba+150)
+    HACK2 (by Unknown): replaces every (old-lba+150) reference with
+    (lba+150)
 
 binhack64 hack3 <boot.bin> <lba> [old-lba]
     HACK3 (by Pekearai / Mr.KiMWU, 2001-02-23): HACK1 + HACK2 combined
@@ -82,9 +84,9 @@ binhack64 check-protection <boot.bin> [id]
 
 binhack64 wince-cdda-fix-ip <ip.bin>
     WinCE+CDDA fix (by pitito): fixes IP.BIN so CDDA audio doesn't break
-    (e.g. always replaying track 1) when converting a WinCE game from
-    GDI to CDI. Unlike every command above, this patches IP.BIN itself,
-    not the boot binary: run it after binhack-ip/binhack
+    (e.g. always replaying track 1) when converting a WinCE game from GDI
+    to CDI. Unlike every command above, this patches IP.BIN itself, not
+    the boot binary: run it after binhack-ip/binhack
 
 binhack64 help
     Show usage. Also accepted as --help or -h
