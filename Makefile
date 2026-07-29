@@ -25,7 +25,7 @@ BIN_DIR = bin/
 BIN = binhack64
 TARGET = $(BIN_DIR)$(BIN)$(OS:Windows_NT=.exe)
 LIBS =
-OBJS = $(OBJ_DIR)main.o $(OBJ_DIR)cli.o $(OBJ_DIR)commands.o $(OBJ_DIR)binhack.o $(OBJ_DIR)hack.o $(OBJ_DIR)cdda.o $(OBJ_DIR)bincon.o $(OBJ_DIR)unprotect.o $(OS:Windows_NT=$(OBJ_DIR)version.o)
+OBJS = $(OBJ_DIR)main.o $(OBJ_DIR)cli.o $(OBJ_DIR)commands.o $(OBJ_DIR)binhack.o $(OBJ_DIR)hack.o $(OBJ_DIR)cdda.o $(OBJ_DIR)bincon.o $(OBJ_DIR)unprotect.o $(OBJ_DIR)wince_cdda_fix.o $(OS:Windows_NT=$(OBJ_DIR)version.o)
 
 # go ! (same recipe on every platform, no per-OS target needed)
 all : $(OBJS) | $(BIN_DIR)

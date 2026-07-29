@@ -19,6 +19,7 @@
 #include "cdda.hpp"
 #include "bincon.hpp"
 #include "unprotect.hpp"
+#include "wince_cdda_fix.hpp"
 #include <string>
 
 using namespace std;
@@ -95,5 +96,10 @@ int runUnprotect(const string& bootname, int variant);
 // check-protection: read-only report of whether variant's original
 // and/or cracked pattern is present. variant -1 checks all 7.
 int runCheckProtection(const string& bootname, int variant);
+
+// WinCE+CDDA fix (pitito): fixes IP.BIN so CDDA audio doesn't break when
+// converting a WinCE game from GDI to CDI. Operates on IP.BIN itself, not
+// the boot binary - run after binhack-ip/binhack.
+int runWinceCddaFix(const string& ipname);
 
 #endif // __COMMANDS__HPP__

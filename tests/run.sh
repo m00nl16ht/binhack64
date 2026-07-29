@@ -179,6 +179,33 @@ assert_byte_at_offset "binhack-ip sets the OS flag to '0' for a bincon'd binary"
 rm -f IP.BIN
 
 # -----------------------------------------------------------------------------
+echo "-- wince-cdda-fix --"
+# ip_all.hak (from the binhack section above) is a real binhack-ip-produced
+# IP.BIN - the fix only makes sense against real hacked output, not a
+# hand-built fixture, since the affected byte lives inside the exploit
+# payload binhack writes.
+
+cp ip_all.hak wince_cdda_apply.bin
+assert_hex_at_offset "sanity: real binhack output has the expected marker" \
+    wince_cdda_apply.bin 25024 2 25c7
+"$BIN" wince-cdda-fix wince_cdda_apply.bin >/dev/null; rc=$?
+assert_exit_code "wince-cdda-fix exits 0" 0 "$rc"
+assert_hex_at_offset "wince-cdda-fix patches the marker to 09 00" \
+    wince_cdda_apply.bin 25024 2 0900
+
+"$BIN" wince-cdda-fix wince_cdda_apply.bin >/dev/null; rc=$?
+assert_exit_code "wince-cdda-fix is idempotent (exit 0 on a second run)" 0 "$rc"
+assert_hex_at_offset "wince-cdda-fix leaves an already-patched file unchanged" \
+    wince_cdda_apply.bin 25024 2 0900
+
+cp "$FIXTURES/IP.BIN" wince_cdda_unrelated.bin
+cp wince_cdda_unrelated.bin wince_cdda_unrelated_ref.bin
+"$BIN" wince-cdda-fix wince_cdda_unrelated.bin >/dev/null 2>&1; rc=$?
+assert_exit_code "wince-cdda-fix rejects a non-binhack-patched IP.BIN" 5 "$rc"
+assert_files_equal "wince-cdda-fix leaves a rejected file untouched" \
+    wince_cdda_unrelated_ref.bin wince_cdda_unrelated.bin
+
+# -----------------------------------------------------------------------------
 echo "-- hack0 / hack / hack2 / hack3 / dahack --"
 # HACK_TEST.BIN is a synthetic fixture: 64 zero bytes with LE(45166) at
 # offset 16 (the HACK target for old-lba=45000), LE(45150) at offset 32
@@ -357,6 +384,9 @@ assert_exit_code "hack with too many args" 1 "$rc"
 
 "$BIN" cdda >/dev/null 2>&1; rc=$?
 assert_exit_code "cdda with missing arg" 1 "$rc"
+
+"$BIN" wince-cdda-fix >/dev/null 2>&1; rc=$?
+assert_exit_code "wince-cdda-fix with missing arg" 1 "$rc"
 
 # -----------------------------------------------------------------------------
 echo "-- help / --version --"

@@ -74,6 +74,16 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
   also gained a `detectWinCE` variant that falls back to a header-byte
   check when no `CD001` signature exists yet (raw pre-mastered WinCE
   binaries, which `bincon` targets, legitimately may not have one).
+- `wince-cdda-fix` subcommand: a 2-byte `IP.BIN` fix (pitito,
+  dreamcast-talk.com) for WinCE games whose CDDA audio breaks when
+  converted from GDI to CDI (typically always replaying track 1). Unlike
+  every other patch command, this one operates on `IP.BIN` itself rather
+  than the boot binary — the affected byte sits inside the exploit
+  payload the classic BINHACK patch writes, confirmed by inspecting a
+  real `binhack-ip`-produced `IP.BIN` rather than assumed from the forum
+  post alone. Idempotent (a no-op, not an error, if already applied) and
+  refuses to touch a file that doesn't have the expected marker, rather
+  than blindly overwriting two bytes the way manual hex-editing would.
 - `bincon`'s precondition failures (already Katana, already bincon'd,
   bincon'd-but-not-WinCE) exit non-zero, unlike the Python original it's
   ported from, which prints a message and returns normally — nothing got

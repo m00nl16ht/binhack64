@@ -87,6 +87,12 @@ void printUsage() {
          << "      pattern is present, without modifying the file. Omit <id> to" << endl
          << "      scan all 7." << endl
          << endl
+         << "  " << PROGNAME << " wince-cdda-fix <ip.bin>" << endl
+         << "      WinCE+CDDA fix (pitito): fixes IP.BIN so CDDA audio doesn't" << endl
+         << "      break when converting a WinCE game from GDI to CDI. Unlike" << endl
+         << "      every other command above, this patches IP.BIN itself - run" << endl
+         << "      it after binhack-ip/binhack, not instead of." << endl
+         << endl
          << "  " << PROGNAME << " help" << endl
          << "      Show this help." << endl
          << endl
@@ -99,7 +105,8 @@ void printUsage() {
          << "  - [old-lba] defaults to " << HACK_DEFAULT_OLD_LBA << " (how most original discs" << endl
          << "    were mastered before being re-burned at a new LBA)." << endl
          << "  - hack0/hack/hack2/hack3/dahack/cdda/bincon/unprotect only touch the" << endl
-         << "    boot binary, never IP.BIN." << endl;
+         << "    boot binary, never IP.BIN. wince-cdda-fix is the opposite: it" << endl
+         << "    only touches IP.BIN, never the boot binary." << endl;
 }
 
 unsigned int parseLba(const char* value) {
@@ -266,6 +273,15 @@ int runCli(int argc, char* argv[]) {
         }
         cout << BANNER << endl << endl;
         return runCheckProtection(argv[2], variant);
+    }
+
+    if (command == "wince-cdda-fix") {
+        if (argc != 3) {
+            cout << "Usage: " << PROGNAME << " wince-cdda-fix <ip.bin>" << endl;
+            return ExitCode::UsageError;
+        }
+        cout << BANNER << endl << endl;
+        return runWinceCddaFix(argv[2]);
     }
 
     cout << "Unknown command: " << command << endl << endl;

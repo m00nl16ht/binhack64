@@ -79,6 +79,12 @@ binhack64 check-protection <boot.bin> [id]
     pattern is present, without modifying the file. Omit <id> to scan
     all 7.
 
+binhack64 wince-cdda-fix <ip.bin>
+    WinCE+CDDA fix (pitito, dreamcast-talk.com): fixes IP.BIN so CDDA
+    audio doesn't break (e.g. always replaying track 1) when converting a
+    WinCE game from GDI to CDI. Unlike every command above, this patches
+    IP.BIN itself, not the boot binary - run it after binhack-ip/binhack.
+
 binhack64 help
     Show usage.
 
@@ -93,7 +99,8 @@ ignored for Windows CE binaries, which don't need the LBA hack.
 `hack0`/`hack`/`hack2`/`hack3`/`dahack`/`cdda`/`bincon`/`unprotect` are
 alternate scene-standard patches — unlike `binhack`/`binhack-boot`/
 `binhack-ip`, they only ever touch the boot binary, never `IP.BIN`.
-`[old-lba]` defaults to 45000 (how most
+(`wince-cdda-fix` is the one exception: it only touches `IP.BIN`, and is
+meant to run after one of those.) `[old-lba]` defaults to 45000 (how most
 original discs were mastered). `cdda` needs no LBA at all: it locates
 itself from the boot binary's own `CD001` signature, and — unlike the
 original it's ported from — refuses to write if the computed patch
@@ -115,6 +122,15 @@ byte-for-byte against `binhacks.py`'s `unprotect()`/`isProtected()`):
 | 4 | DCiso | `13 E1 10 22` → `09 E1 10 22` |
 | 5 | MILF & atreyu187 | `03 89 26 D3 24 D4 0B 43` → `09 00 09 00 09 00 09 00` |
 | 6 (alias `jsr`) | unknowns | `0B D2 37 32 02 8B` → `0B D2 08 00 02 8B` |
+
+`wince-cdda-fix` addresses one specific, widely-applicable WinCE+CDDA
+symptom at a fixed `IP.BIN` offset. The same forum thread it's ported from
+also documents many per-game, per-region fixes to individual games' own
+`.exe`/`.dll` files (Armada, Worms Pinball, Next Tetris, Sega Rally 2,
+and more) — those are out of scope for binhack64 (a `BOOT.BIN`/`IP.BIN`
+tool, not a per-title game patch database) but are real and useful if you
+need them: see the thread at
+[dreamcast-talk.com](https://www.dreamcast-talk.com/forum/viewtopic.php?t=17407).
 
 ## Example: a typical multi-track (DA) game workflow
 

@@ -42,6 +42,15 @@ during development — nothing here is guessed.
 | `unprotect 2`–`4` | unprotect protections 2-4 | retrieved from DCiso | not documented |
 | `unprotect 5` | unprotect protection 5 | MILF & atreyu187 | not documented |
 | `unprotect 6` / `jsr` | unprotect protection 6 | credited only as "unknowns" | not documented |
+| `wince-cdda-fix` | WinCE+CDDA `IP.BIN` fix | pitito | thread started 2024-04-11; pitito's own post says this built on an earlier, undated personal release |
+
+`wince-cdda-fix` is ported from pitito's post on the dreamcast-talk.com
+thread ["Wince+CDDA"](https://www.dreamcast-talk.com/forum/viewtopic.php?t=17407)
+(2024-04-11 onward). That thread also documents a long tail of per-game,
+per-region fixes to individual games' own executables/DLLs (Armada, Worms
+Pinball, Next Tetris, Sega Rally 2) — those are not implemented in
+binhack64 (see README's `wince-cdda-fix` section for why) but remain
+credited to pitito in the thread itself for anyone who needs them.
 
 Dates for `hack3`/`dahack`/`cdda` are the original compiled executables'
 build timestamps, not necessarily each author's exact authorship date —

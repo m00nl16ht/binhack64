@@ -359,3 +359,28 @@ int runCheckProtection(const string& bootname, int variant) {
     boot.close();
     return ExitCode::Ok;
 }
+
+int runWinceCddaFix(const string& ipname) {
+    fstream ip;
+    unsigned int ipsize;
+
+    if (!openBootReadWrite(ipname, ipsize, ip)) {
+        return ExitCode::IpOpenError;
+    }
+
+    WinceCddaFixResult result = applyWinceCddaFix(ip, ipsize);
+    ip.close();
+
+    switch (result) {
+        case WinceCddaFixResult::Applied:
+            cout << "WinCE+CDDA fix applied to " << ipname << "." << endl;
+            return ExitCode::Ok;
+        case WinceCddaFixResult::AlreadyApplied:
+            cout << ipname << " already has the WinCE+CDDA fix applied." << endl;
+            return ExitCode::Ok;
+        default:
+            cout << "File does not look like a binhack-patched IP.BIN "
+                 << "(unexpected bytes at the fix offset)." << endl;
+            return ExitCode::IpWriteError;
+    }
+}
