@@ -37,8 +37,8 @@ during development — nothing here is guessed.
 | `cdda` | CDDA fix | method posted by Mr.KiMWU | `cdda.exe` (original toolkit build) dated 2001-02-23 |
 | `bincon` | bincon | dopefish (core transform, ported here); originally distributed via Echelon (same group as `BINHACK.EXE` above) | 2000-07-28 |
 | `bincon` (not ported — see below) | bincon already-converted check | Shoometsu | 2008-01-26 |
-| `unprotect 0` | unprotect protection 0 | credited only as "unknowns" | not documented |
-| `unprotect 1` | unprotect protection 1 | Mr.talon | not documented |
+| `unprotect 0` | unprotect protection 0 | credited only as "unknowns" | in circulation by 2001 (see note below) |
+| `unprotect 1` | unprotect protection 1 | Mr.talon | in circulation by 2001 (see note below) |
 | `unprotect 2`–`4` | unprotect protections 2-4 | retrieved from DCiso | not documented |
 | `unprotect 5` | unprotect protection 5 | MILF & atreyu187 | not documented |
 | `unprotect 6` / `jsr` | unprotect protection 6 | credited only as "unknowns" | not documented |
@@ -56,6 +56,29 @@ Dates for `hack3`/`dahack`/`cdda` are the original compiled executables'
 build timestamps, not necessarily each author's exact authorship date —
 the closest primary-source evidence available, cited as such rather than
 presented as more precise than it is.
+
+`unprotect 0` and `unprotect 1` are independently corroborated by a
+second, unrelated 2001 tool: **EiFFel**'s "Dreamcast BinPATCH" v1.0.6
+(a French crack group; Bero, credited for `hack` above, appears in their
+NFO greets list, though the tools are otherwise unrelated) offers a
+"1032 scheme" and a "CDE44 scheme," named for the same leading bytes as
+`unprotect 1`/`unprotect 0` respectively, and lists real games the CDE44
+one fixes: Metropolis Street Racer and Confidential Mission. This is
+corroboration, not a full byte-level match — BinPATCH's checkbox labels
+only give the first 2 of 4 pattern bytes, extracted from its compiled
+strings rather than its (unreadable, compiled-in) patch logic, so it
+isn't proof the two tools patch identically. The original discoverer of
+either pattern remains undocumented ("unknowns" per `binhacks.py`);
+BinPATCH doesn't claim discovery, only that it can apply the crack.
+BinPATCH also offers three schemes binhack64 doesn't implement: a
+"5EB0 scheme" split into separate selfboot/non-selfboot variants (the
+same leading bytes as `hack2`/`dahack`, but BinPATCH's own changelog
+notes needing different handling for each case, a distinction
+`unprotect`/`hack2` don't make) and a "0B23 scheme," explicitly labeled
+for the PAL release of Jet Set Radio — a different pattern than
+`unprotect 6`'s `0B D2...` bytes, so it doesn't resolve what `unprotect
+6`'s "jsr" alias itself refers to, but does show "Jet Set Radio" was a
+real scheme-naming convention in the same scene circles at the time.
 
 `bincon`'s 2008 already-converted check (Shoometsu) is documented here for
 completeness but was **not** ported into binhack64: `bincon` uses this
