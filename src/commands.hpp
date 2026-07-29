@@ -49,9 +49,9 @@ bool processBootBin(const string& bootname, unsigned int& bootsize,
 bool hackBootBin(fstream& boot, const vector<unsigned int>& hackoffsets,
                  unsigned int lba, bool& isWinCEBinary);
 
-// Loads the unpatched IP.BIN template (always BOOTSECTOR_NAME in the
-// current directory) into buffer.
-bool loadIpBin(char* buffer);
+// Loads the unpatched bootsector named by ipname into buffer. Fails if it
+// isn't a full BOOTSECTOR_SIZE bytes.
+bool loadIpBin(const string& ipname, char* buffer);
 
 // Writes ipname from iphackbuf, patched with region/VGA/bincon flags and
 // the BOOT.BIN size. boot is only read (for the bincon check), never written.
@@ -67,7 +67,8 @@ bool createHackedIpBin(const string& ipname, char* iphackbuf,
 int runBinhackBoot(const string& bootname, unsigned int lba);
 
 // Patch IP.BIN only: writes region/VGA/bincon flags and the BOOT.BIN size.
-// bootname is opened read-only and never modified.
+// ipname is patched in place; bootname is opened read-only and never
+// modified.
 int runBinhackIp(const string& bootname, const string& ipname);
 
 // Patch both BOOT.BIN and IP.BIN (classic BINHACK behavior).

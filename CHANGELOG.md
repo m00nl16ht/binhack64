@@ -43,6 +43,18 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
   release, separately from a plain development build. Packing is skipped
   with a warning if UPX isn't installed, rather than failing the build.
 
+### Changed
+
+- `binhack-ip` and `binhack` now patch the `IP.BIN` you name, in place.
+  binhack32 and the original `BINHACK.EXE` instead read a template called
+  `IP.BIN` from the current directory and wrote the result to the name you
+  gave, so the file you named was an output and the real input was never
+  stated. Nothing is read that you didn't name now, and `BOOT.BIN` and
+  `IP.BIN` are treated the same way. Copy your template first to keep it.
+  The same applies to interactive mode's bootsector prompt.
+- A missing `IP.BIN`, or one that isn't a full 32768-byte bootsector, is
+  now an error instead of a silently short read.
+
 ### Fixed
 
 - `IP.BIN` is now read in binary mode. It was previously opened as text,

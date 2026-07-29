@@ -52,7 +52,6 @@ const unsigned char binconcheck_ref[ BOOT_HACK_BINCON_CHECK_SIZE ] = { 0x09, 0x0
 const unsigned char rawwincecheck_ref[ BOOT_HACK_RAW_WINCE_CHECK_SIZE ] = { 0xD6, 0x1A };
 
 // Bootstrap
-#define BOOTSECTOR_NAME "IP.BIN"
 #define BOOTSECTOR_SIZE 0x8000
 
 #define BOOTSECTOR_HACK_REGION_FLAGS_OFFSET 0x30

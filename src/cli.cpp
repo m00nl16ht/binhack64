@@ -43,12 +43,12 @@ void printUsage() {
          << endl
          << "  " << PROGNAME << " binhack-ip <boot.bin> <ip.bin>" << endl
          << "      Patch IP.BIN only: writes region/VGA/bincon flags and the" << endl
-         << "      BOOT.BIN size. The unpatched template is always read from" << endl
-         << "      \"" << BOOTSECTOR_NAME << "\" in the current directory; <ip.bin>" << endl
-         << "      is the output filename." << endl
+         << "      BOOT.BIN size. <ip.bin> is patched in place - copy your" << endl
+         << "      template first if you want to keep it." << endl
          << endl
          << "  " << PROGNAME << " binhack <boot.bin> <ip.bin> <lba>" << endl
-         << "      Patch both BOOT.BIN and IP.BIN (classic BINHACK behavior)." << endl
+         << "      Patch both BOOT.BIN and IP.BIN in place (classic BINHACK" << endl
+         << "      behavior)." << endl
          << endl
          << "  " << PROGNAME << " hack0 <boot.bin> <lba> [old-lba]" << endl
          << "      HACK0 (kikuchan): replaces every raw old-lba reference with" << endl
@@ -112,10 +112,11 @@ unsigned int parseLba(const char* value) {
     return static_cast<unsigned int>(atoi(value));
 }
 
-// Reproduces the original interactive prompt sequence: binary name, then
-// bootsector name, then (only if not WinCE) the msinfo/LBA value. Uses the
-// mid-level building blocks directly, since runBinhack() can't defer the
-// LBA prompt until after WinCE detection.
+// Follows the original interactive prompt sequence: binary name, then
+// bootsector name, then (only if not WinCE) the msinfo/LBA value. Both
+// files are patched in place. Uses the mid-level building blocks directly,
+// since runBinhack() can't defer the LBA prompt until after WinCE
+// detection.
 int runInteractive() {
     fstream boot;
     unsigned int bootsize;
@@ -126,8 +127,8 @@ int runInteractive() {
     bool isWinCEBinary = false;
 
     cout << BANNER << endl
-         << "Interactive mode (classic BINHACK trick). For other patching" << endl
-         << "methods, run: " << PROGNAME << " --help" << endl
+         << "Interactive mode (classic BINHACK trick). Both files are patched" << endl
+         << "in place. For other patching methods, run: " << PROGNAME << " --help" << endl
          << endl;
 
     cout << "Enter name of binary: ";
@@ -151,7 +152,7 @@ int runInteractive() {
     }
 
     int result = ExitCode::Ok;
-    if (!loadIpBin(iphackbuf)) {
+    if (!loadIpBin(ipname, iphackbuf)) {
         result = ExitCode::IpOpenError;
     } else if (!createHackedIpBin(ipname, iphackbuf, bootsize, boot)) {
         result = ExitCode::IpWriteError;

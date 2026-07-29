@@ -39,11 +39,10 @@ binhack64 binhack-boot <boot.bin> <lba>
 
 binhack64 binhack-ip <boot.bin> <ip.bin>
     Patch IP.BIN only: writes region/VGA/bincon flags and the BOOT.BIN
-    size. The unpatched template is always read from IP.BIN in the
-    current directory; <ip.bin> is the output filename.
+    size. <ip.bin> is patched in place.
 
 binhack64 binhack <boot.bin> <ip.bin> <lba>
-    Patch both BOOT.BIN and IP.BIN (classic BINHACK behavior).
+    Patch both BOOT.BIN and IP.BIN in place (classic BINHACK behavior).
 
 binhack64 hack0 <boot.bin> <lba> [old-lba]
     HACK0 (kikuchan, hack4 v1.5, 2001/05/04): replaces every raw old-lba
@@ -97,6 +96,21 @@ binhack64 version
 (the same value the original `BINHACK.EXE` asked for as "msinfo"). It's
 ignored for Windows CE binaries, which don't need the LBA hack.
 
+Every command patches the files you name, in place, and reads nothing you
+didn't name. That includes `IP.BIN`: unlike `binhack32` and the original
+`BINHACK.EXE`, which silently read a template called `IP.BIN` from the
+current directory and wrote the result somewhere else, binhack64 patches
+whichever bootsector you pass it. Keep a pristine template by copying it
+first, exactly as you already would for `BOOT.BIN`:
+
+```
+cp IP.BIN mygame.ip
+binhack64 binhack 1ST_READ.BIN mygame.ip 11702
+```
+
+A bootsector that doesn't exist, or that isn't a full 32768 bytes, is an
+error rather than a silently truncated result.
+
 `hack0`/`hack1`/`hack2`/`hack3`/`dahack`/`cdda`/`bincon`/`unprotect` are
 alternate scene-standard patches — unlike `binhack`/`binhack-boot`/
 `binhack-ip`, they only ever touch the boot binary, never `IP.BIN`.
@@ -134,9 +148,10 @@ Documented in the original GDK toolkit's own readme, for a CDDA game where
 session 2 starts at a shifted LBA (e.g. 35500):
 
 ```
+cp IP.BIN mygame.ip
 binhack64 dahack 1ST_READ.BIN 35500
 binhack64 cdda 1ST_READ.BIN
-binhack64 binhack 1ST_READ.BIN IP.BIN 35500
+binhack64 binhack 1ST_READ.BIN mygame.ip 35500
 ```
 
 These patches mostly date back to 1999-2001, targeting a console that's

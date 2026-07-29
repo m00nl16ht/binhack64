@@ -131,20 +131,28 @@ else
     ok "binhack-boot does not touch IP.BIN"
 fi
 
-cp "$FIXTURES/IP.BIN" IP.BIN
+# <ip.bin> is patched in place, so each case copies the template to the
+# name it will be patched under.
+cp "$FIXTURES/IP.BIN" ip_only.hak
 cp "$FIXTURES/1ST_READ.BIN" boot_for_ip.bin
 "$BIN" binhack-ip boot_for_ip.bin ip_only.hak >/dev/null; rc=$?
 assert_exit_code "binhack-ip exits 0" 0 "$rc"
 assert_files_equal "binhack-ip leaves the boot binary untouched" "$FIXTURES/1ST_READ.BIN" boot_for_ip.bin
+assert_files_differ "binhack-ip patches its IP.BIN in place" "$FIXTURES/IP.BIN" ip_only.hak
 assert_file_size "binhack-ip output is a full 32768-byte IP.BIN" ip_only.hak 32768
 assert_byte_at_offset "binhack-ip leaves the OS flag untouched (non-bincon'd)" ip_only.hak 62 00
-rm -f IP.BIN
 
-cp "$FIXTURES/IP.BIN" IP.BIN
+# No stray ./IP.BIN exists here: binhack-ip must not fall back to reading one.
+if [ -e IP.BIN ]; then
+    not_ok "binhack-ip must not read/create a bare IP.BIN"
+else
+    ok "binhack-ip reads only the file it was given"
+fi
+
+cp "$FIXTURES/IP.BIN" ip_all.hak
 cp "$FIXTURES/1ST_READ.BIN" boot_all.bin
 "$BIN" binhack boot_all.bin ip_all.hak 12345 >/dev/null; rc=$?
 assert_exit_code "binhack exits 0" 0 "$rc"
-rm -f IP.BIN
 
 # Composability: binhack-boot + binhack-ip run separately must equal binhack.
 assert_files_equal "binhack-boot output matches binhack's boot output" boot_only.bin boot_all.bin
@@ -159,24 +167,22 @@ assert_exit_code "binhack-boot exits 0 for a WinCE binary" 0 "$rc"
 assert_files_equal "binhack-boot leaves a WinCE binary untouched (no LBA hack)" \
     "$FIXTURES/0WINCEOS.BIN" wince_boot.bin
 
-cp "$FIXTURES/IP.BIN" IP.BIN
+cp "$FIXTURES/IP.BIN" wince_ip.hak
 cp "$FIXTURES/0WINCEOS.BIN" wince_for_ip.bin
 "$BIN" binhack-ip wince_for_ip.bin wince_ip.hak >/dev/null; rc=$?
 assert_exit_code "binhack-ip exits 0 for a WinCE binary" 0 "$rc"
 assert_byte_at_offset "binhack-ip leaves the OS flag untouched (non-bincon'd WinCE)" wince_ip.hak 62 00
-rm -f IP.BIN
 
 # -----------------------------------------------------------------------------
 echo "-- binhack-ip (bincon'd) --"
 
-cp "$FIXTURES/IP.BIN" IP.BIN
+cp "$FIXTURES/IP.BIN" bincon_ip.hak
 cp "$FIXTURES/BINCONED.BIN" bincon_boot.bin
 "$BIN" binhack-ip bincon_boot.bin bincon_ip.hak >/dev/null; rc=$?
 assert_exit_code "binhack-ip exits 0 for a bincon'd binary" 0 "$rc"
 assert_files_equal "binhack-ip leaves the bincon'd boot binary untouched" \
     "$FIXTURES/BINCONED.BIN" bincon_boot.bin
 assert_byte_at_offset "binhack-ip sets the OS flag to '0' for a bincon'd binary" bincon_ip.hak 62 30
-rm -f IP.BIN
 
 # -----------------------------------------------------------------------------
 echo "-- wince-cdda-fix-ip --"
@@ -217,7 +223,7 @@ cp "$FIXTURES/1ST_READ.BIN" .
 perl -e 'my $d = "A" x 32768;
          substr($d, 0x100, 2) = "\r\n";
          substr($d, 0x200, 1) = "\x1A";
-         open(F, ">:raw", "IP.BIN"); print F $d; close(F);'
+         open(F, ">:raw", "binarymode.hak"); print F $d; close(F);'
 "$BIN" binhack-ip 1ST_READ.BIN binarymode.hak >/dev/null; rc=$?
 assert_exit_code "binhack-ip on a CR-bearing IP.BIN exits 0" 0 "$rc"
 assert_file_size "binhack-ip output is a full bootsector" binarymode.hak 32768
@@ -377,13 +383,12 @@ assert_contains "check-protection scan-all reports variant 6" "$out" "6 (unknown
 # -----------------------------------------------------------------------------
 echo "-- interactive mode --"
 
-cp "$FIXTURES/IP.BIN" IP.BIN
+cp "$FIXTURES/IP.BIN" ip_interactive.hak
 cp "$FIXTURES/1ST_READ.BIN" boot_interactive.bin
 printf 'boot_interactive.bin\nip_interactive.hak\n12345\n' | "$BIN" >/dev/null; rc=$?
 assert_exit_code "interactive mode exits 0" 0 "$rc"
 assert_files_equal "interactive mode boot output matches binhack" boot_all.bin boot_interactive.bin
 assert_files_equal "interactive mode IP output matches binhack" ip_all.hak ip_interactive.hak
-rm -f IP.BIN
 
 # -----------------------------------------------------------------------------
 echo "-- error paths --"
@@ -396,6 +401,16 @@ assert_exit_code "binhack-ip with wrong arg count" 1 "$rc"
 
 "$BIN" binhack one two >/dev/null 2>&1; rc=$?
 assert_exit_code "binhack with wrong arg count" 1 "$rc"
+
+cp "$FIXTURES/1ST_READ.BIN" boot_for_missing_ip.bin
+"$BIN" binhack-ip boot_for_missing_ip.bin no_such_ip.bin >/dev/null 2>&1; rc=$?
+assert_exit_code "binhack-ip on a nonexistent IP.BIN" 4 "$rc"
+
+cp "$FIXTURES/1ST_READ.BIN" boot_for_short_ip.bin
+head -c 100 "$FIXTURES/IP.BIN" > short_ip.bin
+"$BIN" binhack-ip boot_for_short_ip.bin short_ip.bin >/dev/null 2>&1; rc=$?
+assert_exit_code "binhack-ip on a truncated IP.BIN" 4 "$rc"
+assert_file_size "binhack-ip leaves a truncated IP.BIN untouched" short_ip.bin 100
 
 "$BIN" not-a-real-command >/dev/null 2>&1; rc=$?
 assert_exit_code "unknown subcommand" 1 "$rc"

@@ -112,20 +112,26 @@ bool hackBootBin(fstream& boot, const vector<unsigned int>& hackoffsets,
     }
 }
 
-bool loadIpBin(char* buffer) {
+bool loadIpBin(const string& ipname, char* buffer) {
 
     ifstream ipbin;
 
     // Opening the IP.BIN (binary: without it, Windows text mode eats CR
     // bytes and shifts the rest of the bootsector)
-    ipbin.open(BOOTSECTOR_NAME, ios::in | ios::binary);
+    ipbin.open(ipname.c_str(), ios::in | ios::binary);
     if (ipbin.fail()) {
-        cout << "Error opening ip file." << endl;
+        cout << "Error opening " << ipname << "." << endl;
         return false;
     }
 
     // Read ip.bin content
     ipbin.read(buffer, BOOTSECTOR_SIZE);
+    if (ipbin.gcount() != BOOTSECTOR_SIZE) {
+        cout << "Error: " << ipname << " is not a full " << BOOTSECTOR_SIZE
+             << "-byte bootsector." << endl;
+        ipbin.close();
+        return false;
+    }
     ipbin.close();
 
     return true;
@@ -151,7 +157,7 @@ bool createHackedIpBin(const string& ipname, char* iphackbuf,
 
     // Finishing...
     iphak.close();
-    cout << "File " << ipname << " successfully created." << endl;
+    cout << "File " << ipname << " successfully patched." << endl;
 
     return true;
 }
@@ -191,7 +197,7 @@ int runBinhackIp(const string& bootname, const string& ipname) {
     }
 
     int result = ExitCode::Ok;
-    if (!loadIpBin(iphackbuf)) {
+    if (!loadIpBin(ipname, iphackbuf)) {
         result = ExitCode::IpOpenError;
     } else if (!createHackedIpBin(ipname, iphackbuf, bootsize, boot)) {
         result = ExitCode::IpWriteError;
@@ -218,7 +224,7 @@ int runBinhack(const string& bootname, const string& ipname, unsigned int lba) {
     }
 
     int result = ExitCode::Ok;
-    if (!loadIpBin(iphackbuf)) {
+    if (!loadIpBin(ipname, iphackbuf)) {
         result = ExitCode::IpOpenError;
     } else if (!createHackedIpBin(ipname, iphackbuf, bootsize, boot)) {
         result = ExitCode::IpWriteError;
