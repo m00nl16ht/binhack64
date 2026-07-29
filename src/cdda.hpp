@@ -19,9 +19,11 @@
 // CDDA bootbin fixture rather than re-derived from the Python source.
 #define CDDA_OFFSET_MAGIC 0x8C010000u
 
-// CDDA fix by Mr. KiMWU: fixes multi-track CDDA bootbins where the first
-// audio track reads as track04 instead of track01, by writing a small
-// routine plus two numeric patches near the disc's first CD001 signature.
+// CDDA fix, method posted by Mr.KiMWU (cdda.exe dated 2001-02-23, per the
+// original toolkit's readme): fixes multi-track CDDA bootbins where the
+// first audio track reads as track04 instead of track01, by writing a
+// small routine plus two numeric patches near the disc's first CD001
+// signature.
 // Unlike the original (which had no such check, by its own admission),
 // this returns false and leaves boot untouched if the computed offset
 // doesn't look sane for this file.

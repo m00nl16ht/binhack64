@@ -119,63 +119,63 @@ echo
 cd "$WORKDIR"
 
 # -----------------------------------------------------------------------------
-echo "-- patch-boot / patch-ip / patch-all (Katana) --"
+echo "-- binhack-boot / binhack-ip / binhack (Katana) --"
 
 cp "$FIXTURES/1ST_READ.BIN" boot_only.bin
-"$BIN" patch-boot boot_only.bin 12345 >/dev/null; rc=$?
-assert_exit_code "patch-boot exits 0" 0 "$rc"
-assert_files_differ "patch-boot modifies the boot binary" "$FIXTURES/1ST_READ.BIN" boot_only.bin
+"$BIN" binhack-boot boot_only.bin 12345 >/dev/null; rc=$?
+assert_exit_code "binhack-boot exits 0" 0 "$rc"
+assert_files_differ "binhack-boot modifies the boot binary" "$FIXTURES/1ST_READ.BIN" boot_only.bin
 if [ -e IP.BIN ]; then
-    not_ok "patch-boot must not read/create IP.BIN"
+    not_ok "binhack-boot must not read/create IP.BIN"
 else
-    ok "patch-boot does not touch IP.BIN"
+    ok "binhack-boot does not touch IP.BIN"
 fi
 
 cp "$FIXTURES/IP.BIN" IP.BIN
 cp "$FIXTURES/1ST_READ.BIN" boot_for_ip.bin
-"$BIN" patch-ip boot_for_ip.bin ip_only.hak >/dev/null; rc=$?
-assert_exit_code "patch-ip exits 0" 0 "$rc"
-assert_files_equal "patch-ip leaves the boot binary untouched" "$FIXTURES/1ST_READ.BIN" boot_for_ip.bin
-assert_file_size "patch-ip output is a full 32768-byte IP.BIN" ip_only.hak 32768
-assert_byte_at_offset "patch-ip leaves the OS flag untouched (non-bincon'd)" ip_only.hak 62 00
+"$BIN" binhack-ip boot_for_ip.bin ip_only.hak >/dev/null; rc=$?
+assert_exit_code "binhack-ip exits 0" 0 "$rc"
+assert_files_equal "binhack-ip leaves the boot binary untouched" "$FIXTURES/1ST_READ.BIN" boot_for_ip.bin
+assert_file_size "binhack-ip output is a full 32768-byte IP.BIN" ip_only.hak 32768
+assert_byte_at_offset "binhack-ip leaves the OS flag untouched (non-bincon'd)" ip_only.hak 62 00
 rm -f IP.BIN
 
 cp "$FIXTURES/IP.BIN" IP.BIN
 cp "$FIXTURES/1ST_READ.BIN" boot_all.bin
-"$BIN" patch-all boot_all.bin ip_all.hak 12345 >/dev/null; rc=$?
-assert_exit_code "patch-all exits 0" 0 "$rc"
+"$BIN" binhack boot_all.bin ip_all.hak 12345 >/dev/null; rc=$?
+assert_exit_code "binhack exits 0" 0 "$rc"
 rm -f IP.BIN
 
-# Composability: patch-boot + patch-ip run separately must equal patch-all.
-assert_files_equal "patch-boot output matches patch-all's boot output" boot_only.bin boot_all.bin
-assert_files_equal "patch-ip output matches patch-all's IP output" ip_only.hak ip_all.hak
+# Composability: binhack-boot + binhack-ip run separately must equal binhack.
+assert_files_equal "binhack-boot output matches binhack's boot output" boot_only.bin boot_all.bin
+assert_files_equal "binhack-ip output matches binhack's IP output" ip_only.hak ip_all.hak
 
 # -----------------------------------------------------------------------------
-echo "-- patch-boot / patch-ip (WinCE) --"
+echo "-- binhack-boot / binhack-ip (WinCE) --"
 
 cp "$FIXTURES/0WINCEOS.BIN" wince_boot.bin
-"$BIN" patch-boot wince_boot.bin 12345 >/dev/null; rc=$?
-assert_exit_code "patch-boot exits 0 for a WinCE binary" 0 "$rc"
-assert_files_equal "patch-boot leaves a WinCE binary untouched (no LBA hack)" \
+"$BIN" binhack-boot wince_boot.bin 12345 >/dev/null; rc=$?
+assert_exit_code "binhack-boot exits 0 for a WinCE binary" 0 "$rc"
+assert_files_equal "binhack-boot leaves a WinCE binary untouched (no LBA hack)" \
     "$FIXTURES/0WINCEOS.BIN" wince_boot.bin
 
 cp "$FIXTURES/IP.BIN" IP.BIN
 cp "$FIXTURES/0WINCEOS.BIN" wince_for_ip.bin
-"$BIN" patch-ip wince_for_ip.bin wince_ip.hak >/dev/null; rc=$?
-assert_exit_code "patch-ip exits 0 for a WinCE binary" 0 "$rc"
-assert_byte_at_offset "patch-ip leaves the OS flag untouched (non-bincon'd WinCE)" wince_ip.hak 62 00
+"$BIN" binhack-ip wince_for_ip.bin wince_ip.hak >/dev/null; rc=$?
+assert_exit_code "binhack-ip exits 0 for a WinCE binary" 0 "$rc"
+assert_byte_at_offset "binhack-ip leaves the OS flag untouched (non-bincon'd WinCE)" wince_ip.hak 62 00
 rm -f IP.BIN
 
 # -----------------------------------------------------------------------------
-echo "-- patch-ip (bincon'd) --"
+echo "-- binhack-ip (bincon'd) --"
 
 cp "$FIXTURES/IP.BIN" IP.BIN
 cp "$FIXTURES/BINCONED.BIN" bincon_boot.bin
-"$BIN" patch-ip bincon_boot.bin bincon_ip.hak >/dev/null; rc=$?
-assert_exit_code "patch-ip exits 0 for a bincon'd binary" 0 "$rc"
-assert_files_equal "patch-ip leaves the bincon'd boot binary untouched" \
+"$BIN" binhack-ip bincon_boot.bin bincon_ip.hak >/dev/null; rc=$?
+assert_exit_code "binhack-ip exits 0 for a bincon'd binary" 0 "$rc"
+assert_files_equal "binhack-ip leaves the bincon'd boot binary untouched" \
     "$FIXTURES/BINCONED.BIN" bincon_boot.bin
-assert_byte_at_offset "patch-ip sets the OS flag to '0' for a bincon'd binary" bincon_ip.hak 62 30
+assert_byte_at_offset "binhack-ip sets the OS flag to '0' for a bincon'd binary" bincon_ip.hak 62 30
 rm -f IP.BIN
 
 # -----------------------------------------------------------------------------
@@ -245,33 +245,109 @@ assert_exit_code "cdda rejects a non-CDDA bootbin instead of writing garbage" 3 
 assert_files_equal "cdda leaves a rejected file untouched" "$FIXTURES/1ST_READ.BIN" not_cdda.bin
 
 # -----------------------------------------------------------------------------
+echo "-- bincon --"
+# WINCE_RAW.BIN is a synthetic fixture: 6144 bytes (3x2048), signature
+# D6 1A (raw, not-yet-bincon'd WinCE, no CD001 - exercises detectWinCE's
+# fallback), chunk1=0xAA, chunk2=0xBB, chunk3=0xCC. bincon's transform was
+# run and inspected with od before being hardcoded here (see CHANGELOG):
+# chunk1 is dropped, chunk2 survives, chunk3 ends up duplicated.
+
+cp "$FIXTURES/WINCE_RAW.BIN" wince_raw.bin
+"$BIN" bincon wince_raw.bin >/dev/null; rc=$?
+assert_exit_code "bincon exits 0 on a raw WinCE binary" 0 "$rc"
+assert_file_size "bincon does not change the file size" wince_raw.bin 6144
+assert_hex_at_offset "bincon drops chunk1, chunk2 now starts at 0" wince_raw.bin 0 4 bbbbbbbb
+assert_hex_at_offset "bincon: chunk2/chunk3 boundary is preserved" wince_raw.bin 2044 8 bbbbbbbbcccccccc
+assert_hex_at_offset "bincon duplicates chunk3 at the end" wince_raw.bin 6140 4 cccccccc
+
+cp "$FIXTURES/1ST_READ.BIN" bincon_katana.bin
+"$BIN" bincon bincon_katana.bin >/dev/null 2>&1; rc=$?
+assert_exit_code "bincon rejects a Katana binary" 3 "$rc"
+assert_files_equal "bincon leaves a rejected Katana binary untouched" \
+    "$FIXTURES/1ST_READ.BIN" bincon_katana.bin
+
+cp "$FIXTURES/BINCONED.BIN" bincon_already.bin
+"$BIN" bincon bincon_already.bin >/dev/null 2>&1; rc=$?
+assert_exit_code "bincon rejects an already-bincon'd binary" 3 "$rc"
+assert_files_equal "bincon leaves an already-bincon'd binary untouched" \
+    "$FIXTURES/BINCONED.BIN" bincon_already.bin
+
+printf 'D61A0000000000000000000000000000000000000000000000000000000000' | \
+    xxd -r -p > bincon_tiny.bin
+cp bincon_tiny.bin bincon_tiny_ref.bin
+"$BIN" bincon bincon_tiny.bin >/dev/null 2>&1; rc=$?
+assert_exit_code "bincon rejects a file too small for the transform" 3 "$rc"
+assert_files_equal "bincon leaves a too-small file untouched" bincon_tiny_ref.bin bincon_tiny.bin
+
+# -----------------------------------------------------------------------------
+echo "-- unprotect / check-protection --"
+# UNPROTECT_TEST.BIN is a synthetic fixture: variant 0's 4-byte marker at
+# offset 0, variant 6/jsr's 6-byte marker at offset 16, zero elsewhere.
+
+cp "$FIXTURES/UNPROTECT_TEST.BIN" unprotect0.bin
+"$BIN" unprotect unprotect0.bin 0 >/dev/null; rc=$?
+assert_exit_code "unprotect 0 exits 0" 0 "$rc"
+assert_hex_at_offset "unprotect 0 applies the crack" unprotect0.bin 0 4 09000900
+
+cp "$FIXTURES/UNPROTECT_TEST.BIN" unprotect6.bin
+"$BIN" unprotect unprotect6.bin 6 >/dev/null; rc=$?
+assert_exit_code "unprotect 6 exits 0" 0 "$rc"
+assert_hex_at_offset "unprotect 6 applies the crack" unprotect6.bin 16 6 0bd20800028b
+
+cp "$FIXTURES/UNPROTECT_TEST.BIN" unprotect_jsr.bin
+"$BIN" unprotect unprotect_jsr.bin jsr >/dev/null; rc=$?
+assert_exit_code "unprotect jsr exits 0" 0 "$rc"
+assert_files_equal "unprotect jsr == unprotect 6" unprotect6.bin unprotect_jsr.bin
+
+"$BIN" unprotect unprotect0.bin 7 >/dev/null 2>&1; rc=$?
+assert_exit_code "unprotect rejects an out-of-range id" 1 "$rc"
+
+"$BIN" unprotect unprotect0.bin notanid >/dev/null 2>&1; rc=$?
+assert_exit_code "unprotect rejects a non-numeric id" 1 "$rc"
+
+cp "$FIXTURES/UNPROTECT_TEST.BIN" check.bin
+out="$("$BIN" check-protection check.bin 0 2>&1)"; rc=$?
+assert_exit_code "check-protection 0 exits 0 before patching" 0 "$rc"
+assert_contains "check-protection 0 finds the original pattern before patching" "$out" "original pattern found"
+
+"$BIN" unprotect check.bin 0 >/dev/null
+out="$("$BIN" check-protection check.bin 0 2>&1)"; rc=$?
+assert_exit_code "check-protection 0 exits 0 after patching" 0 "$rc"
+assert_contains "check-protection 0 finds the cracked pattern after patching" "$out" "cracked pattern found"
+
+out="$("$BIN" check-protection "$FIXTURES/UNPROTECT_TEST.BIN" 2>&1)"; rc=$?
+assert_exit_code "check-protection with no id (scan all) exits 0" 0 "$rc"
+assert_contains "check-protection scan-all reports variant 0" "$out" "0 (unknowns)"
+assert_contains "check-protection scan-all reports variant 6" "$out" "6 (unknowns"
+
+# -----------------------------------------------------------------------------
 echo "-- interactive mode --"
 
 cp "$FIXTURES/IP.BIN" IP.BIN
 cp "$FIXTURES/1ST_READ.BIN" boot_interactive.bin
 printf 'boot_interactive.bin\nip_interactive.hak\n12345\n' | "$BIN" >/dev/null; rc=$?
 assert_exit_code "interactive mode exits 0" 0 "$rc"
-assert_files_equal "interactive mode boot output matches patch-all" boot_all.bin boot_interactive.bin
-assert_files_equal "interactive mode IP output matches patch-all" ip_all.hak ip_interactive.hak
+assert_files_equal "interactive mode boot output matches binhack" boot_all.bin boot_interactive.bin
+assert_files_equal "interactive mode IP output matches binhack" ip_all.hak ip_interactive.hak
 rm -f IP.BIN
 
 # -----------------------------------------------------------------------------
 echo "-- error paths --"
 
-"$BIN" patch-boot only_one_arg >/dev/null 2>&1; rc=$?
-assert_exit_code "patch-boot with wrong arg count" 1 "$rc"
+"$BIN" binhack-boot only_one_arg >/dev/null 2>&1; rc=$?
+assert_exit_code "binhack-boot with wrong arg count" 1 "$rc"
 
-"$BIN" patch-ip only_one_arg >/dev/null 2>&1; rc=$?
-assert_exit_code "patch-ip with wrong arg count" 1 "$rc"
+"$BIN" binhack-ip only_one_arg >/dev/null 2>&1; rc=$?
+assert_exit_code "binhack-ip with wrong arg count" 1 "$rc"
 
-"$BIN" patch-all one two >/dev/null 2>&1; rc=$?
-assert_exit_code "patch-all with wrong arg count" 1 "$rc"
+"$BIN" binhack one two >/dev/null 2>&1; rc=$?
+assert_exit_code "binhack with wrong arg count" 1 "$rc"
 
 "$BIN" not-a-real-command >/dev/null 2>&1; rc=$?
 assert_exit_code "unknown subcommand" 1 "$rc"
 
-"$BIN" patch-boot does_not_exist.bin 12345 >/dev/null 2>&1; rc=$?
-assert_exit_code "patch-boot on a nonexistent file" 2 "$rc"
+"$BIN" binhack-boot does_not_exist.bin 12345 >/dev/null 2>&1; rc=$?
+assert_exit_code "binhack-boot on a nonexistent file" 2 "$rc"
 
 "$BIN" hack only_one_arg >/dev/null 2>&1; rc=$?
 assert_exit_code "hack with wrong arg count" 1 "$rc"

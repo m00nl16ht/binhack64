@@ -83,6 +83,27 @@ bool isBincon( istream& boot ) {
 
 // -----------------------------------------------------------------------------
 
+bool detectWinCE( istream& boot, unsigned int bootsize ) {
+	vector<unsigned int> hackoffsets = searchHackOffsets( boot, bootsize );
+	if ( !hackoffsets.empty() ) {
+		return isWinCE( boot, hackoffsets[0] );
+	}
+
+	// No CD001 found (e.g. a raw pre-mastered WinCE binary): fall back to
+	// checking the first 2 bytes, matching binhacks.py's _checkWinCE. A
+	// bincon'd file's marker also counts, since bincon'ing doesn't change
+	// what kind of binary it fundamentally is.
+	char first2[ BOOT_HACK_RAW_WINCE_CHECK_SIZE ];
+	boot.seekg( 0, ios::beg );
+	boot.read( first2, BOOT_HACK_RAW_WINCE_CHECK_SIZE );
+	boot.seekg( 0, ios::beg );
+
+	return ( memcmp( first2, rawwincecheck_ref, BOOT_HACK_RAW_WINCE_CHECK_SIZE ) == 0 ) ||
+	       ( memcmp( first2, binconcheck_ref, BOOT_HACK_BINCON_CHECK_SIZE ) == 0 );
+}
+
+// -----------------------------------------------------------------------------
+
 void hackBootStrap( ofstream& iphak, unsigned int bootsize, fstream& boot ) {
     // Set all region flags
     iphak.seekp( BOOTSECTOR_HACK_REGION_FLAGS_OFFSET, ios::beg );

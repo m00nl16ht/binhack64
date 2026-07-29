@@ -10,16 +10,11 @@
 #include "hack.hpp"
 #include <cstring>
 
-unsigned int searchReplaceUint32LE(fstream& boot, unsigned int bootsize,
-                                    unsigned int oldValue, unsigned int newValue) {
-    if (bootsize < 4) {
+unsigned int searchReplaceBytes(fstream& boot, unsigned int bootsize,
+                                const unsigned char* oldPattern, const unsigned char* newPattern,
+                                unsigned int patternLen) {
+    if (patternLen == 0 || bootsize < patternLen) {
         return 0;
-    }
-
-    unsigned char oldBytes[4], newBytes[4];
-    for (int i = 0; i < 4; i++) {
-        oldBytes[i] = static_cast<unsigned char>((oldValue >> (i * 8)) & 0xFF);
-        newBytes[i] = static_cast<unsigned char>((newValue >> (i * 8)) & 0xFF);
     }
 
     // Loading the boot file in memory to search it
@@ -28,15 +23,15 @@ unsigned int searchReplaceUint32LE(fstream& boot, unsigned int bootsize,
     boot.read(bootbuf, bootsize);
 
     // Non-overlapping left-to-right scan, matching Python's str.replace:
-    // a match consumes 4 bytes before the scan resumes.
+    // a match consumes patternLen bytes before the scan resumes.
     unsigned int replacements = 0;
     unsigned int i = 0;
-    while (i + 4 <= bootsize) {
-        if (memcmp(&bootbuf[i], oldBytes, 4) == 0) {
+    while (i + patternLen <= bootsize) {
+        if (memcmp(&bootbuf[i], oldPattern, patternLen) == 0) {
             boot.seekp(i, ios::beg);
-            boot.write(reinterpret_cast<const char*>(newBytes), 4);
+            boot.write(reinterpret_cast<const char*>(newPattern), patternLen);
             replacements++;
-            i += 4;
+            i += patternLen;
         } else {
             i++;
         }
@@ -44,6 +39,38 @@ unsigned int searchReplaceUint32LE(fstream& boot, unsigned int bootsize,
 
     delete[] bootbuf;
     return replacements;
+}
+
+bool containsBytes(istream& boot, unsigned int bootsize,
+                   const unsigned char* pattern, unsigned int patternLen) {
+    if (patternLen == 0 || bootsize < patternLen) {
+        return false;
+    }
+
+    char* bootbuf = new char[bootsize];
+    boot.seekg(0, ios::beg);
+    boot.read(bootbuf, bootsize);
+
+    bool found = false;
+    for (unsigned int i = 0; i + patternLen <= bootsize; i++) {
+        if (memcmp(&bootbuf[i], pattern, patternLen) == 0) {
+            found = true;
+            break;
+        }
+    }
+
+    delete[] bootbuf;
+    return found;
+}
+
+unsigned int searchReplaceUint32LE(fstream& boot, unsigned int bootsize,
+                                    unsigned int oldValue, unsigned int newValue) {
+    unsigned char oldBytes[4], newBytes[4];
+    for (int i = 0; i < 4; i++) {
+        oldBytes[i] = static_cast<unsigned char>((oldValue >> (i * 8)) & 0xFF);
+        newBytes[i] = static_cast<unsigned char>((newValue >> (i * 8)) & 0xFF);
+    }
+    return searchReplaceBytes(boot, bootsize, oldBytes, newBytes, 4);
 }
 
 unsigned int applyHack0(fstream& boot, unsigned int bootsize,

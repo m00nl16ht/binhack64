@@ -3,12 +3,20 @@
 [![CI](https://github.com/m00nl16ht/binhack64/actions/workflows/ci.yml/badge.svg)](https://github.com/m00nl16ht/binhack64/actions/workflows/ci.yml)
 
 `binhack64` is a modernized, 64-bit-native continuation of `binhack32`
-(FamilyGuy and contributors, since 2010), itself a clone of the original
-16-bit `BINHACK.EXE` for the Sega Dreamcast. It patches selfboot discs so a
-homebrew `BOOT.BIN` (the file that ships on disc as `1ST_READ.BIN`) can be
-found and run at the LBA it ends up burned at, and produces a matching
-`IP.BIN` (region-free, VGA-enabled, with the correct `BOOT.BIN` size baked
-in).
+(FamilyGuy and contributors, since 2010), itself a clone of Echelon's
+original 16-bit `BINHACK.EXE` (2000) for the Sega Dreamcast. It patches
+selfboot discs so a homebrew `BOOT.BIN` (the file that ships on disc as
+`1ST_READ.BIN`) can be found and run at the LBA it ends up burned at, and
+produces a matching `IP.BIN` (region-free, VGA-enabled, with the correct
+`BOOT.BIN` size baked in).
+
+Despite the name, binhack64 isn't limited to the classic BINHACK trick.
+Running it with no arguments drops straight into that trick's original
+interactive mode, unchanged from binhack32/`BINHACK.EXE` — which is also
+why it's the thing "binhack64" defaults to. But the tool also implements
+several other public, scene-standard Dreamcast patching methods as
+subcommands: HACK0/HACK/HACK2/HACK3/DAHACK, the CDDA fix, bincon, and
+unprotect. See Usage below for the full list.
 
 ## What's new in binhack64
 
@@ -25,20 +33,20 @@ kept exactly as it was.
 binhack64
     Interactive mode (prompts for input, patches both files)
 
-binhack64 patch-boot <boot.bin> <lba>
+binhack64 binhack-boot <boot.bin> <lba>
     Patch BOOT.BIN (1ST_READ.BIN) only: writes the LBA hack.
 
-binhack64 patch-ip <boot.bin> <ip.bin>
+binhack64 binhack-ip <boot.bin> <ip.bin>
     Patch IP.BIN only: writes region/VGA/bincon flags and the BOOT.BIN
     size. The unpatched template is always read from IP.BIN in the
     current directory; <ip.bin> is the output filename.
 
-binhack64 patch-all <boot.bin> <ip.bin> <lba>
+binhack64 binhack <boot.bin> <ip.bin> <lba>
     Patch both BOOT.BIN and IP.BIN (classic BINHACK behavior).
 
 binhack64 hack0 <boot.bin> <lba> [old-lba]
-    HACK0 (kikuchan): replaces every raw old-lba reference with lba
-    directly (no +166/+150 offset).
+    HACK0 (kikuchan, hack4 v1.5, 2001/05/04): replaces every raw old-lba
+    reference with lba directly (no +166/+150 offset).
 
 binhack64 hack <boot.bin> <lba> [old-lba]
     HACK (Bero): replaces every (old-lba+166) reference with (lba+166).
@@ -47,14 +55,29 @@ binhack64 hack2 <boot.bin> <lba> [old-lba]
     HACK2 (Unknown): replaces every (old-lba+150) reference with (lba+150).
 
 binhack64 hack3 <boot.bin> <lba> [old-lba]
-    HACK3 (Pekearai): HACK + HACK2 combined.
+    HACK3 (Pekearai, 2001-02-23): HACK + HACK2 combined.
 
 binhack64 dahack <boot.bin> <lba> [old-lba]
-    DAHACK (Mr. KiMWU): HACK(lba) + HACK2(0).
+    DAHACK (method posted by Mr.KiMWU, 2001-02-23): HACK(lba) + HACK2(0).
 
 binhack64 cdda <boot.bin>
-    CDDA fix (Mr. KiMWU): fixes multi-track CDDA bootbins where the first
-    audio track reads as track04 instead of track01.
+    CDDA fix (method posted by Mr.KiMWU, 2001-02-23): fixes multi-track
+    CDDA bootbins where the first audio track reads as track04 instead of
+    track01.
+
+binhack64 bincon <boot.bin>
+    bincon (dopefish, 7/28/00): voodoo to make a raw WinCE boot binary
+    bootable. Run binhack-ip afterward to also set IP.BIN's OS flag - it
+    detects bincon'd binaries automatically, no separate flag needed.
+
+binhack64 unprotect <boot.bin> <id>
+    Removes one of 7 non-LBA copy protections. <id> is 0-6 or "jsr"
+    (alias for 6) - see the table below for the full credited list.
+
+binhack64 check-protection <boot.bin> [id]
+    Read-only: reports whether <id>'s original and/or already-cracked
+    pattern is present, without modifying the file. Omit <id> to scan
+    all 7.
 
 binhack64 help
     Show usage.
@@ -67,14 +90,48 @@ binhack64 --version
 (the same value the original `BINHACK.EXE` asked for as "msinfo"). It's
 ignored for Windows CE binaries, which don't need the LBA hack.
 
-`hack0`/`hack`/`hack2`/`hack3`/`dahack`/`cdda` are alternate scene-standard
-patches (`hack`/`hack2`/`hack3`/`dahack`/`cdda` by Bero, Unknown, Pekearai
-and Mr. KiMWU; `hack0` from kikuchan's hack4) — unlike `patch-*`, they only
-ever touch the boot binary, never `IP.BIN`. `[old-lba]` defaults to 45000
-(how most original discs were mastered). `cdda` needs no LBA at all: it
-locates itself from the boot binary's own `CD001` signature, and — unlike
-the original it's ported from — refuses to write if the computed patch
-location doesn't look like a real CDDA bootbin.
+`hack0`/`hack`/`hack2`/`hack3`/`dahack`/`cdda`/`bincon`/`unprotect` are
+alternate scene-standard patches — unlike `binhack`/`binhack-boot`/
+`binhack-ip`, they only ever touch the boot binary, never `IP.BIN`.
+`[old-lba]` defaults to 45000 (how most
+original discs were mastered). `cdda` needs no LBA at all: it locates
+itself from the boot binary's own `CD001` signature, and — unlike the
+original it's ported from — refuses to write if the computed patch
+location doesn't look like a real CDDA bootbin. `bincon` likewise refuses
+to run on a file too small for its transform to be meaningful. (The
+original `bincon` tool by dopefish got its own already-converted check
+from Shoometsu in 2008; binhack64 doesn't port that specific check, since
+it already has equivalent bincon detection shared with `binhack-ip`.)
+
+`unprotect <id>` cracks one of these non-LBA copy protections (verified
+byte-for-byte against `binhacks.py`'s `unprotect()`/`isProtected()`):
+
+| id | credit | pattern |
+|----|--------|---------|
+| 0 | unknowns | `CD E4 43 6A` → `09 00 09 00` |
+| 1 | Mr.talon | `10 32 0D 8B` → `08 00 0D 8B` |
+| 2 | DCiso | `CD EB 22 D1` → `09 00 22 D1` |
+| 3 | DCiso | `02 E0 04 6A` → `00 E0 04 A0` |
+| 4 | DCiso | `13 E1 10 22` → `09 E1 10 22` |
+| 5 | MILF & atreyu187 | `03 89 26 D3 24 D4 0B 43` → `09 00 09 00 09 00 09 00` |
+| 6 (alias `jsr`) | unknowns | `0B D2 37 32 02 8B` → `0B D2 08 00 02 8B` |
+
+## Example: a typical multi-track (DA) game workflow
+
+Documented in the original GDK toolkit's own readme, for a CDDA game where
+session 2 starts at a shifted LBA (e.g. 35500):
+
+```
+binhack64 dahack 1ST_READ.BIN 35500
+binhack64 cdda 1ST_READ.BIN
+binhack64 binhack 1ST_READ.BIN IP.BIN 35500
+```
+
+These patches mostly date back to 1999-2001, targeting a console that's
+been out of production for over two decades — they're kept here for
+homebrew and preservation purposes, not tested against every game they
+were ever used on, and come with no warranty. As the original toolkit's
+own readme put it: *"Please use as self-responsibility."*
 
 ## Building
 
@@ -100,17 +157,21 @@ make test
 ```
 
 Builds the project, then runs `tests/run.sh`: a black-box suite against the
-fixtures in `tests/fixtures/` (Katana, WinCE, bincon'd, and CDDA boot
-binaries, plus a synthetic fixture built to exercise `hack0`/`hack`/`hack2`)
-that checks exit codes, exact patched bytes, that `patch-boot`/`patch-ip`
-never touch the file the other owns and compose to the same result as
-`patch-all`, that `hack3`/`dahack` compose from `hack`/`hack2` the same
-way, and that interactive mode matches `patch-all`. Runs entirely in a
-temporary scratch directory. CI runs the same thing on every push/PR.
+fixtures in `tests/fixtures/` (Katana, WinCE, bincon'd, CDDA, and raw-WinCE
+boot binaries, plus synthetic fixtures built to exercise `hack0`/`hack`/
+`hack2` and `unprotect`) that checks exit codes, exact patched bytes, that
+`binhack-boot`/`binhack-ip` never touch the file the other owns and compose to
+the same result as `binhack`, that `hack3`/`dahack` compose from `hack`/
+`hack2` the same way, that `bincon`/`cdda`/`unprotect` reject files they
+shouldn't touch instead of writing garbage, and that interactive mode
+matches `binhack`. Runs entirely in a temporary scratch directory. CI
+runs the same thing on every push/PR.
 
 ## License
 
 binhack64 is free software, released under the
 [GNU General Public License v3](LICENSE), same as binhack32 since v1.0.0.4.
 
-See [CHANGELOG.md](CHANGELOG.md) for release history, including binhack32.
+See [CHANGELOG.md](CHANGELOG.md) for release history, including binhack32,
+and [CREDITS.md](CREDITS.md) for full author/date attribution of every
+patch method.

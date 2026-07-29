@@ -10,10 +10,22 @@
 #include "commands.hpp"
 
 // Opens bootname read/write and gets its size, without requiring a CD001
-// signature (unlike processBootBin) - hack/hack2/hack3/dahack/cdda don't
-// all need one.
+// signature (unlike processBootBin) - hack/hack2/hack3/dahack/cdda/bincon
+// don't all need one.
 static bool openBootReadWrite(const string& bootname, unsigned int& bootsize, fstream& boot) {
     boot.open(bootname.c_str(), ios::binary | ios::in | ios::out);
+    if (boot.fail()) {
+        cout << "Error opening " << bootname << "." << endl;
+        return false;
+    }
+    bootsize = filesize(boot);
+    return true;
+}
+
+// Opens bootname read-only and gets its size, for commands that only
+// ever inspect the boot binary (binhack-ip, check-protection).
+static bool openBootReadOnly(const string& bootname, unsigned int& bootsize, fstream& boot) {
+    boot.open(bootname.c_str(), ios::binary | ios::in);
     if (boot.fail()) {
         cout << "Error opening " << bootname << "." << endl;
         return false;
@@ -147,7 +159,7 @@ bool createHackedIpBin(const string& ipname, char* iphackbuf,
 // HIGH-LEVEL COMMANDS
 // ============================================================================
 
-int patchBoot(const string& bootname, unsigned int lba) {
+int runBinhackBoot(const string& bootname, unsigned int lba) {
     fstream boot;
     unsigned int bootsize;
     vector<unsigned int> hackoffsets;
@@ -166,19 +178,16 @@ int patchBoot(const string& bootname, unsigned int lba) {
     return result;
 }
 
-int patchIp(const string& bootname, const string& ipname) {
+int runBinhackIp(const string& bootname, const string& ipname) {
     fstream boot;
+    unsigned int bootsize;
     char iphackbuf[BOOTSECTOR_SIZE];
 
-    // Opened read-only: patch-ip only needs the boot binary's size and its
+    // Opened read-only: binhack-ip only needs the boot binary's size and its
     // bincon status, so BOOT.BIN itself is never modified here.
-    boot.open(bootname.c_str(), ios::binary | ios::in);
-    if (boot.fail()) {
-        cout << "Error opening " << bootname << "." << endl;
+    if (!openBootReadOnly(bootname, bootsize, boot)) {
         return ExitCode::BootOpenError;
     }
-
-    unsigned int bootsize = filesize(boot);
 
     int result = ExitCode::Ok;
     if (!loadIpBin(iphackbuf)) {
@@ -191,7 +200,7 @@ int patchIp(const string& bootname, const string& ipname) {
     return result;
 }
 
-int patchAll(const string& bootname, const string& ipname, unsigned int lba) {
+int runBinhack(const string& bootname, const string& ipname, unsigned int lba) {
     fstream boot;
     unsigned int bootsize;
     vector<unsigned int> hackoffsets;
@@ -274,4 +283,79 @@ int runCdda(const string& bootname) {
 
     boot.close();
     return result;
+}
+
+int runBincon(const string& bootname) {
+    fstream boot;
+    unsigned int bootsize;
+
+    if (!openBootReadWrite(bootname, bootsize, boot)) {
+        return ExitCode::BootOpenError;
+    }
+
+    int result = ExitCode::Ok;
+    if (!applyBincon(boot, bootsize)) {
+        result = ExitCode::BootHackError;
+    }
+
+    boot.close();
+    return result;
+}
+
+int runUnprotect(const string& bootname, int variant) {
+    fstream boot;
+    unsigned int bootsize;
+
+    if (!openBootReadWrite(bootname, bootsize, boot)) {
+        return ExitCode::BootOpenError;
+    }
+
+    unsigned int count = 0;
+    bool valid = applyUnprotect(boot, bootsize, variant, count);
+    boot.close();
+
+    if (!valid) {
+        cout << "Invalid unprotect variant." << endl;
+        return ExitCode::UsageError;
+    }
+
+    cout << "unprotect " << variant << " (" << unprotectVariantCredit(variant)
+         << "): " << count << " location(s) patched." << endl;
+    return ExitCode::Ok;
+}
+
+static void printProtectionStatus(istream& boot, unsigned int bootsize, int variant) {
+    bool protectedFound = false, unprotectedFound = false;
+    checkProtection(boot, bootsize, variant, protectedFound, unprotectedFound);
+    cout << "  " << variant << " (" << unprotectVariantCredit(variant) << "): "
+         << "original pattern " << (protectedFound ? "found" : "not found") << ", "
+         << "cracked pattern " << (unprotectedFound ? "found" : "not found") << endl;
+}
+
+int runCheckProtection(const string& bootname, int variant) {
+    fstream boot;
+    unsigned int bootsize;
+
+    if (!openBootReadOnly(bootname, bootsize, boot)) {
+        return ExitCode::BootOpenError;
+    }
+
+    if (variant == -1) {
+        cout << "Protection scan for " << bootname << ":" << endl;
+        for (int i = 0; i < UNPROTECT_VARIANT_COUNT; i++) {
+            printProtectionStatus(boot, bootsize, i);
+        }
+        boot.close();
+        return ExitCode::Ok;
+    }
+
+    if (variant < 0 || variant >= UNPROTECT_VARIANT_COUNT) {
+        boot.close();
+        cout << "Invalid unprotect variant." << endl;
+        return ExitCode::UsageError;
+    }
+
+    printProtectionStatus(boot, bootsize, variant);
+    boot.close();
+    return ExitCode::Ok;
 }

@@ -17,6 +17,8 @@
 #include "binhack.hpp"
 #include "hack.hpp"
 #include "cdda.hpp"
+#include "bincon.hpp"
+#include "unprotect.hpp"
 #include <string>
 
 using namespace std;
@@ -62,14 +64,14 @@ bool createHackedIpBin(const string& ipname, char* iphackbuf,
 
 // Patch BOOT.BIN (1ST_READ.BIN) only: writes the LBA hack. IP.BIN is
 // neither read nor written.
-int patchBoot(const string& bootname, unsigned int lba);
+int runBinhackBoot(const string& bootname, unsigned int lba);
 
 // Patch IP.BIN only: writes region/VGA/bincon flags and the BOOT.BIN size.
 // bootname is opened read-only and never modified.
-int patchIp(const string& bootname, const string& ipname);
+int runBinhackIp(const string& bootname, const string& ipname);
 
 // Patch both BOOT.BIN and IP.BIN (classic BINHACK behavior).
-int patchAll(const string& bootname, const string& ipname, unsigned int lba);
+int runBinhack(const string& bootname, const string& ipname, unsigned int lba);
 
 // HACK0 (kikuchan), HACK (Bero), HACK2 (Unknown), HACK3 (Pekearai) and
 // DAHACK (Mr. KiMWU): alternate boot-binary-only LBA patches. None of
@@ -83,5 +85,15 @@ int runDahack(const string& bootname, unsigned int lba, unsigned int oldLba);
 // CDDA fix (Mr. KiMWU): fixes multi-track CDDA bootbins. Doesn't need an
 // LBA - it locates itself from the boot binary's own CD001 signature.
 int runCdda(const string& bootname);
+
+// bincon (dopefish/echelon): voodoo to make WinCE games boot.
+int runBincon(const string& bootname);
+
+// unprotect: removes one of 7 non-LBA copy protections (variant 0-6).
+int runUnprotect(const string& bootname, int variant);
+
+// check-protection: read-only report of whether variant's original
+// and/or cracked pattern is present. variant -1 checks all 7.
+int runCheckProtection(const string& bootname, int variant);
 
 #endif // __COMMANDS__HPP__

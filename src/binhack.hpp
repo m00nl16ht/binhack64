@@ -25,8 +25,15 @@ using namespace std;
 int filesize( istream& );
 bool isWinCE( istream&, unsigned int );
 vector<unsigned int> searchHackOffsets( istream& boot, unsigned int bootsize );
+bool isBincon( istream& boot );
 void hackBootStrap( ofstream&, unsigned int, fstream& );
 bool hackKatanaBootBinary( fstream&, unsigned int, unsigned int );
+
+// Full WinCE detection, usable even without a pre-found CD001 offset:
+// tries searchHackOffsets()+isWinCE() first, and if no CD001 is found
+// (e.g. a raw pre-mastered WinCE binary) falls back to checking the
+// first 2 bytes, matching binhacks.py's _checkWinCE.
+bool detectWinCE( istream& boot, unsigned int bootsize );
 
 // -----------------------------------------------------------------------------
 // DATA DEFINITIONS
@@ -41,6 +48,11 @@ const unsigned char wincecheck_ref[ BOOT_HACK_WINCE_CHECK_SIZE ] = { 0x0D, 0x00,
 
 #define BOOT_HACK_BINCON_CHECK_SIZE 2
 const unsigned char binconcheck_ref[ BOOT_HACK_BINCON_CHECK_SIZE ] = { 0x09, 0x00 };
+
+// Raw (not yet bincon'd) WinCE header signature, used by detectWinCE's
+// no-CD001 fallback.
+#define BOOT_HACK_RAW_WINCE_CHECK_SIZE 2
+const unsigned char rawwincecheck_ref[ BOOT_HACK_RAW_WINCE_CHECK_SIZE ] = { 0xD6, 0x1A };
 
 // Bootstrap
 #define BOOTSECTOR_NAME "IP.BIN"
