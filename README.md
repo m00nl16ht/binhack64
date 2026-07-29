@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/m00nl16ht/binhack64/actions/workflows/ci.yml/badge.svg)](https://github.com/m00nl16ht/binhack64/actions/workflows/ci.yml)
 
+> The ultimate low-level binary patch tool for the Sega Dreamcast.
+
 **binhack64** is a modernized, 64-bit-native continuation of `binhack32`,
 itself a clone of original 16-bit `BINHACK.EXE` for the Sega Dreamcast. It
 patches selfboot discs so a `BOOT.BIN` (the file that usually ships on disc
@@ -92,6 +94,14 @@ binhack64 version
     Show version information. Also accepted as --version or -v.
 ```
 
+Options:
+
+```
+--backup
+    Before patching, copy each file the command modifies to <file>.bak.
+    May be placed anywhere on the command line.
+```
+
 `<lba>` is the MSINFO/LBA value of the boot binary on the target disc image
 (the same value the original `BINHACK.EXE` asked for as "msinfo"). It's
 ignored for Windows CE binaries, which don't need the LBA hack.
@@ -110,6 +120,15 @@ binhack64 binhack 1ST_READ.BIN mygame.ip 11702
 
 A bootsector that doesn't exist, or that isn't a full 32768 bytes, is an
 error rather than a silently truncated result.
+
+Since everything is patched in place, `--backup` keeps a copy of each file
+before it's touched. An existing `.bak` is never overwritten, so it still
+holds the original after a chain of patches over the same file:
+
+```
+binhack64 --backup dahack 1ST_READ.BIN 35500   # creates 1ST_READ.BIN.bak
+binhack64 --backup cdda 1ST_READ.BIN           # keeps the existing .bak
+```
 
 `hack0`/`hack1`/`hack2`/`hack3`/`dahack`/`cdda`/`bincon`/`unprotect` are
 alternate scene-standard patches — unlike `binhack`/`binhack-boot`/

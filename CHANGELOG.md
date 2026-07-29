@@ -36,6 +36,10 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
   patch command it targets `IP.BIN`, so run it after `binhack-ip` or
   `binhack`. Applying it twice is a no-op rather than an error, and it
   refuses to touch a file without the expected marker.
+- `--backup` option: copies each file a command modifies to `<file>.bak`
+  first. Accepted anywhere on the command line. An existing backup is kept
+  rather than overwritten, so it still holds the original after several
+  patches have been run over the same file.
 - `make test`: a black-box test suite, also run in CI on every push and
   pull request.
 - `make dist`: strips and (best-effort) UPX-compresses the binary for

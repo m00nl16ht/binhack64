@@ -234,6 +234,43 @@ assert_hex_at_offset "binhack-ip preserves a 0x1A byte in IP.BIN" \
 cd ..
 
 # -----------------------------------------------------------------------------
+echo "-- --backup --"
+
+mkdir -p backup && cd backup
+cp "$FIXTURES/1ST_READ.BIN" bk_boot.bin
+cp "$FIXTURES/IP.BIN" bk.ip
+
+"$BIN" --backup dahack bk_boot.bin 35500 >/dev/null; rc=$?
+assert_exit_code "--backup before the subcommand exits 0" 0 "$rc"
+assert_files_equal "--backup copies the original aside" \
+    "$FIXTURES/1ST_READ.BIN" bk_boot.bin.bak
+assert_files_differ "--backup still patches the file" \
+    bk_boot.bin bk_boot.bin.bak
+
+# An existing backup must be kept, so it still holds the pristine original
+# after a chain of patches over the same file.
+"$BIN" hack2 bk_boot.bin 35500 --backup >/dev/null; rc=$?
+assert_exit_code "--backup after the filename is accepted" 0 "$rc"
+assert_files_equal "an existing backup is kept, not overwritten" \
+    "$FIXTURES/1ST_READ.BIN" bk_boot.bin.bak
+
+"$BIN" binhack --backup bk_boot.bin bk.ip 35500 >/dev/null; rc=$?
+assert_exit_code "--backup in the middle is accepted" 0 "$rc"
+assert_files_equal "--backup covers IP.BIN too" "$FIXTURES/IP.BIN" bk.ip.bak
+assert_files_equal "chained patches leave the first backup intact" \
+    "$FIXTURES/1ST_READ.BIN" bk_boot.bin.bak
+
+# Without the flag, nothing extra is written.
+cp "$FIXTURES/1ST_READ.BIN" nobk.bin
+"$BIN" dahack nobk.bin 35500 >/dev/null
+if [ -e nobk.bin.bak ]; then
+    not_ok "no backup must be made without --backup"
+else
+    ok "no backup is made without --backup"
+fi
+cd ..
+
+# -----------------------------------------------------------------------------
 echo "-- hack0 / hack / hack2 / hack3 / dahack --"
 # HACK_TEST.BIN is a synthetic fixture: 64 zero bytes with LE(45166) at
 # offset 16 (the HACK target for old-lba=45000), LE(45150) at offset 32

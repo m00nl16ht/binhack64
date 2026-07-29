@@ -117,6 +117,13 @@ void printUsage() {
          << "  " << PROGNAME << " version" << endl
          << "      Show version information (--version, -v)." << endl
          << endl
+         << "Options:" << endl
+         << "  --backup" << endl
+         << "      Before patching, copy each file this command modifies to" << endl
+         << "      <file>" << BACKUP_SUFFIX << ". May be placed anywhere on the command line." << endl
+         << "      An existing backup is kept, so it still holds the original" << endl
+         << "      after several patches have been run over the same file." << endl
+         << endl
          << "Notes:" << endl
          << "  - <lba> is the MSINFO/LBA value of the boot binary on the target" << endl
          << "    disc image. It is ignored for Windows CE binaries." << endl
@@ -156,6 +163,10 @@ int runInteractive() {
     cout << "Enter name of bootsector: ";
     cin >> ipname;
 
+    if (!ensureBackup(bootname) || !ensureBackup(ipname)) {
+        return ExitCode::BackupError;
+    }
+
     if (!processBootBin(bootname, bootsize, hackoffsets, boot)) {
         return ExitCode::BootOpenError;
     }
@@ -185,6 +196,20 @@ int runInteractive() {
 
 int runCli(int argc, char* argv[]) {
     PROGNAME = basename(argv[0]);
+
+    // Pull --backup out of the argument list wherever it appears, so every
+    // command below keeps its plain positional argument count.
+    char* filtered[64];
+    int nargs = 0;
+    for (int i = 0; i < argc && nargs < 64; i++) {
+        if (i > 0 && string(argv[i]) == "--backup") {
+            setBackupEnabled(true);
+        } else {
+            filtered[nargs++] = argv[i];
+        }
+    }
+    argv = filtered;
+    argc = nargs;
 
     if (argc == 1) {
         return runInteractive();

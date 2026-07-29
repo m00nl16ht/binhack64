@@ -172,6 +172,10 @@ int runBinhackBoot(const string& bootname, unsigned int lba) {
     vector<unsigned int> hackoffsets;
     bool isWinCEBinary = false;
 
+    if (!ensureBackup(bootname)) {
+        return ExitCode::BackupError;
+    }
+
     if (!processBootBin(bootname, bootsize, hackoffsets, boot)) {
         return ExitCode::BootOpenError;
     }
@@ -189,6 +193,10 @@ int runBinhackIp(const string& bootname, const string& ipname) {
     fstream boot;
     unsigned int bootsize;
     char iphackbuf[BOOTSECTOR_SIZE];
+
+    if (!ensureBackup(ipname)) {
+        return ExitCode::BackupError;
+    }
 
     // Opened read-only: binhack-ip only needs the boot binary's size and its
     // bincon status, so BOOT.BIN itself is never modified here.
@@ -213,6 +221,11 @@ int runBinhack(const string& bootname, const string& ipname, unsigned int lba) {
     vector<unsigned int> hackoffsets;
     char iphackbuf[BOOTSECTOR_SIZE];
     bool isWinCEBinary = false;
+
+    // Both files are modified, so back both up before touching either.
+    if (!ensureBackup(bootname) || !ensureBackup(ipname)) {
+        return ExitCode::BackupError;
+    }
 
     if (!processBootBin(bootname, bootsize, hackoffsets, boot)) {
         return ExitCode::BootOpenError;
@@ -243,6 +256,10 @@ static int runNumericHack(const string& bootname, unsigned int lba, unsigned int
                           const char* label) {
     fstream boot;
     unsigned int bootsize;
+
+    if (!ensureBackup(bootname)) {
+        return ExitCode::BackupError;
+    }
 
     if (!openBootReadWrite(bootname, bootsize, boot)) {
         return ExitCode::BootOpenError;
@@ -279,6 +296,10 @@ int runCdda(const string& bootname) {
     fstream boot;
     unsigned int bootsize;
 
+    if (!ensureBackup(bootname)) {
+        return ExitCode::BackupError;
+    }
+
     if (!openBootReadWrite(bootname, bootsize, boot)) {
         return ExitCode::BootOpenError;
     }
@@ -296,6 +317,10 @@ int runBincon(const string& bootname) {
     fstream boot;
     unsigned int bootsize;
 
+    if (!ensureBackup(bootname)) {
+        return ExitCode::BackupError;
+    }
+
     if (!openBootReadWrite(bootname, bootsize, boot)) {
         return ExitCode::BootOpenError;
     }
@@ -312,6 +337,10 @@ int runBincon(const string& bootname) {
 int runUnprotect(const string& bootname, int variant) {
     fstream boot;
     unsigned int bootsize;
+
+    if (!ensureBackup(bootname)) {
+        return ExitCode::BackupError;
+    }
 
     if (!openBootReadWrite(bootname, bootsize, boot)) {
         return ExitCode::BootOpenError;
@@ -370,6 +399,10 @@ int runCheckProtection(const string& bootname, int variant) {
 int runWinceCddaFix(const string& ipname) {
     fstream ip;
     unsigned int ipsize;
+
+    if (!ensureBackup(ipname)) {
+        return ExitCode::BackupError;
+    }
 
     if (!openBootReadWrite(ipname, ipsize, ip)) {
         return ExitCode::IpOpenError;

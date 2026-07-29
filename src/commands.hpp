@@ -19,6 +19,7 @@
 #include "bincon.hpp"
 #include "unprotect.hpp"
 #include "wince_cdda_fix.hpp"
+#include "backup.hpp"
 #include <string>
 
 using namespace std;
@@ -34,6 +35,7 @@ namespace ExitCode {
     const int BootHackError = 3;
     const int IpOpenError = 4;
     const int IpWriteError = 5;
+    const int BackupError = 6;
 }
 
 // -----------------------------------------------------------------------------

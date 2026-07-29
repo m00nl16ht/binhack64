@@ -42,6 +42,7 @@ OBJ_NAMES = main.o\
 	bincon.o\
 	unprotect.o\
 	wince_cdda_fix.o\
+	backup.o\
 	$(OS:Windows_NT=version.o)
 OBJS = $(addprefix $(OBJ_DIR),$(OBJ_NAMES))
 
