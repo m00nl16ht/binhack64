@@ -74,9 +74,9 @@ int runBinhackIp(const string& bootname, const string& ipname);
 // Patch both BOOT.BIN and IP.BIN (classic BINHACK behavior).
 int runBinhack(const string& bootname, const string& ipname, unsigned int lba);
 
-// HACK0 (kikuchan), HACK (Bero), HACK2 (Unknown), HACK3 (Pekearai) and
-// DAHACK (Mr. KiMWU): alternate boot-binary-only LBA patches. None of
-// these touch IP.BIN.
+// HACK0 (kikuchan), HACK1 (Bero), HACK2 (Unknown), HACK3 (Pekearai /
+// Mr. KiMWU) and DAHACK (Mr. KiMWU): alternate boot-binary-only LBA
+// patches. None of these touch IP.BIN.
 int runHack0(const string& bootname, unsigned int lba, unsigned int oldLba);
 int runHack(const string& bootname, unsigned int lba, unsigned int oldLba);
 int runHack2(const string& bootname, unsigned int lba, unsigned int oldLba);

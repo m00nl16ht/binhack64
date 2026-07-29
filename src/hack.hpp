@@ -48,7 +48,7 @@ unsigned int searchReplaceUint32LE(fstream& boot, unsigned int bootsize,
 unsigned int applyHack0(fstream& boot, unsigned int bootsize,
                         unsigned int lba, unsigned int oldLba);
 
-// HACK by Bero: replaces every (oldLba + 166) reference with (lba + 166).
+// HACK1 by Bero: replaces every (oldLba + 166) reference with (lba + 166).
 unsigned int applyHack(fstream& boot, unsigned int bootsize,
                        unsigned int lba, unsigned int oldLba);
 
@@ -56,11 +56,11 @@ unsigned int applyHack(fstream& boot, unsigned int bootsize,
 unsigned int applyHack2(fstream& boot, unsigned int bootsize,
                         unsigned int lba, unsigned int oldLba);
 
-// HACK3 by Pekearai: HACK(lba) + HACK2(lba).
+// HACK3 by Pekearai / Mr. KiMWU: HACK1(lba) + HACK2(lba).
 unsigned int applyHack3(fstream& boot, unsigned int bootsize,
                         unsigned int lba, unsigned int oldLba);
 
-// DAHACK, method posted by Mr.KiMWU: HACK(lba) + HACK2(0).
+// DAHACK, method posted by Mr.KiMWU: HACK1(lba) + HACK2(0).
 unsigned int applyDahack(fstream& boot, unsigned int bootsize,
                          unsigned int lba, unsigned int oldLba);
 

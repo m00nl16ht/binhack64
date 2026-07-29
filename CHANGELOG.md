@@ -19,10 +19,9 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
   classic BINHACK patch into its two halves so they can be run
   independently instead of always together. `binhack-boot` never touches
   `IP.BIN`, and `binhack-ip` never modifies `BOOT.BIN`.
-- `hack0`, `hack`, `hack2`, `hack3` and `dahack` subcommands: alternate
+- `hack0`, `hack1`, `hack2`, `hack3` and `dahack` subcommands: alternate
   LBA patches that only ever touch the boot binary. All accept an optional
-  `[old-lba]` (default 45000). `hack1` is accepted as an alias for `hack`,
-  matching the HACK1 name the patch is known by elsewhere.
+  `[old-lba]` (default 45000). `hack` is accepted as an alias for `hack1`.
 - `cdda` subcommand: fixes multi-track CDDA boot binaries where the first
   audio track reads as track04 instead of track01.
 - `bincon` subcommand: makes a raw Windows CE boot binary bootable.
@@ -43,32 +42,19 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
   release, separately from a plain development build. Packing is skipped
   with a warning if UPX isn't installed, rather than failing the build.
 
-### Changed
+### Differences from binhack32
 
-- `binhack-ip` and `binhack` now patch the `IP.BIN` you name, in place.
-  binhack32 and the original `BINHACK.EXE` instead read a template called
-  `IP.BIN` from the current directory and wrote the result to the name you
-  gave, so the file you named was an output and the real input was never
-  stated. Nothing is read that you didn't name now, and `BOOT.BIN` and
-  `IP.BIN` are treated the same way. Copy your template first to keep it.
-  The same applies to interactive mode's bootsector prompt.
-- A missing `IP.BIN`, or one that isn't a full 32768-byte bootsector, is
-  now an error instead of a silently short read.
-
-### Fixed
-
-- `IP.BIN` is now read in binary mode. It was previously opened as text,
-  so on Windows any CR byte in the template was silently dropped and every
-  byte after it shifted, corrupting the generated bootsector. Inherited
-  from binhack32.
-
-### Notes
-
+- `IP.BIN` is patched in place, like `BOOT.BIN` always was. binhack32 read
+  a template called `IP.BIN` from the current directory and wrote the
+  result to the name you gave it; binhack64 reads nothing you didn't name.
+  Copy your template first to keep it.
+- A missing `IP.BIN`, or one that isn't a full 32768-byte bootsector, is an
+  error rather than a corrupt result. binhack32 also read `IP.BIN` as text
+  on Windows, which silently dropped CR bytes and shifted the rest.
 - `cdda`, `bincon` and `wince-cdda-fix-ip` refuse to write when the target
-  file doesn't match what the patch expects, instead of writing out of
-  bounds or silently doing nothing as the original tools could.
-- Exit codes are small, named, non-negative values (0 for success),
-  unlike binhack32's ad-hoc negative numbers.
+  file doesn't match what the patch expects.
+- Exit codes are small, named, non-negative values (0 for success), instead
+  of ad-hoc negative numbers.
 - The no-argument interactive mode keeps binhack32's original prompts and
   order, including only asking for the LBA/msinfo value when the boot
   binary isn't Windows CE.

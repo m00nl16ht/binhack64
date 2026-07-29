@@ -9,32 +9,51 @@
 
 #include "cli.hpp"
 #include "commands.hpp"
+#include "version.hpp"
 #include <cstdlib>
+#include <cctype>
 
 namespace {
-
-const char* BANNER = "IP.BIN/BOOT.BIN Selfboot Hacker - binhack64";
 
 // Set once at the top of runCli() from argv[0]'s basename, so usage text
 // reflects the actual invoked filename rather than a hardcoded name or a
 // full path.
-string PROGNAME = "binhack64";
+string PROGNAME = BINHACK64_NAME;
 
+// argv[0]'s filename, without directories and without a trailing ".exe".
 string basename(const string& path) {
     size_t pos = path.find_last_of("/\\");
-    return (pos == string::npos) ? path : path.substr(pos + 1);
+    string name = (pos == string::npos) ? path : path.substr(pos + 1);
+
+    const string ext = ".exe";
+    if (name.size() > ext.size()) {
+        string tail = name.substr(name.size() - ext.size());
+        for (size_t i = 0; i < tail.size(); ++i) {
+            tail[i] = static_cast<char>(tolower(static_cast<unsigned char>(tail[i])));
+        }
+        if (tail == ext) {
+            name.erase(name.size() - ext.size());
+        }
+    }
+
+    return name;
+}
+
+void printBanner() {
+    cout << PROGNAME << " - v" << BINHACK64_VERSION << " - "
+         << BINHACK64_DESCRIPTION << endl
+         << BINHACK64_COPYRIGHT << endl
+         << endl;
 }
 
 void printVersion() {
-    cout << BANNER << endl
-         << "Modernized 64-bit BINHACK clone for the Sega Dreamcast." << endl
-         << "Copyright (C) 2010-2026 FamilyGuy and contributors." << endl
-         << "Licensed under the GNU General Public License v3 (GPLv3)." << endl;
+    printBanner();
+    cout << BINHACK64_LICENSE << endl;
 }
 
 void printUsage() {
-    cout << BANNER << endl << endl
-         << "Usage:" << endl
+    printBanner();
+    cout << "Usage:" << endl
          << "  " << PROGNAME << endl
          << "      Interactive mode (prompts for input, patches both files)" << endl
          << endl
@@ -54,7 +73,7 @@ void printUsage() {
          << "      HACK0 (kikuchan): replaces every raw old-lba reference with" << endl
          << "      lba directly (no +166/+150 offset) in the boot binary." << endl
          << endl
-         << "  " << PROGNAME << " hack|hack1 <boot.bin> <lba> [old-lba]" << endl
+         << "  " << PROGNAME << " hack1|hack <boot.bin> <lba> [old-lba]" << endl
          << "      HACK1 (Bero): replaces every (old-lba+166) reference with" << endl
          << "      (lba+166) in the boot binary." << endl
          << endl
@@ -63,7 +82,7 @@ void printUsage() {
          << "      (lba+150) in the boot binary." << endl
          << endl
          << "  " << PROGNAME << " hack3 <boot.bin> <lba> [old-lba]" << endl
-         << "      HACK3 (Pekearai): HACK1 + HACK2 combined." << endl
+         << "      HACK3 (Pekearai / Mr. KiMWU): HACK1 + HACK2 combined." << endl
          << endl
          << "  " << PROGNAME << " dahack <boot.bin> <lba> [old-lba]" << endl
          << "      DAHACK (Mr. KiMWU): HACK1(lba) + HACK2(0)." << endl
@@ -73,7 +92,7 @@ void printUsage() {
          << "      the first audio track reads as track04 instead of track01." << endl
          << endl
          << "  " << PROGNAME << " bincon <boot.bin>" << endl
-         << "      bincon (dopefish/echelon): voodoo to make a raw WinCE boot" << endl
+         << "      bincon (dopefish): voodoo to make a raw WinCE boot" << endl
          << "      binary bootable. Run binhack-ip afterward to also set IP.BIN's" << endl
          << "      OS flag - it detects bincon'd binaries automatically." << endl
          << endl
@@ -103,7 +122,7 @@ void printUsage() {
          << "    disc image. It is ignored for Windows CE binaries." << endl
          << "  - [old-lba] defaults to " << HACK_DEFAULT_OLD_LBA << " (how most original discs" << endl
          << "    were mastered before being re-burned at a new LBA)." << endl
-         << "  - hack0/hack/hack2/hack3/dahack/cdda/bincon/unprotect only touch the" << endl
+         << "  - hack0/hack1/hack2/hack3/dahack/cdda/bincon/unprotect only touch the" << endl
          << "    boot binary, never IP.BIN. wince-cdda-fix-ip is the opposite: it" << endl
          << "    only touches IP.BIN, never the boot binary." << endl;
 }
@@ -126,9 +145,9 @@ int runInteractive() {
     char iphackbuf[BOOTSECTOR_SIZE];
     bool isWinCEBinary = false;
 
-    cout << BANNER << endl
-         << "Interactive mode (classic BINHACK trick). Both files are patched" << endl
-         << "in place. For other patching methods, run: " << PROGNAME << " --help" << endl
+    printBanner();
+    cout << "Running binhack in interactive mode. Both files are patched in place." << endl
+         << "For other patching methods, run: \"" << PROGNAME << " help\"." << endl
          << endl;
 
     cout << "Enter name of binary: ";
@@ -188,7 +207,7 @@ int runCli(int argc, char* argv[]) {
             cout << "Usage: " << PROGNAME << " binhack-boot <boot.bin> <lba>" << endl;
             return ExitCode::UsageError;
         }
-        cout << BANNER << endl << endl;
+        printBanner();
         return runBinhackBoot(argv[2], parseLba(argv[3]));
     }
 
@@ -197,7 +216,7 @@ int runCli(int argc, char* argv[]) {
             cout << "Usage: " << PROGNAME << " binhack-ip <boot.bin> <ip.bin>" << endl;
             return ExitCode::UsageError;
         }
-        cout << BANNER << endl << endl;
+        printBanner();
         return runBinhackIp(argv[2], argv[3]);
     }
 
@@ -206,7 +225,7 @@ int runCli(int argc, char* argv[]) {
             cout << "Usage: " << PROGNAME << " binhack <boot.bin> <ip.bin> <lba>" << endl;
             return ExitCode::UsageError;
         }
-        cout << BANNER << endl << endl;
+        printBanner();
         return runBinhack(argv[2], argv[3], parseLba(argv[4]));
     }
 
@@ -216,7 +235,7 @@ int runCli(int argc, char* argv[]) {
             cout << "Usage: " << PROGNAME << " " << command << " <boot.bin> <lba> [old-lba]" << endl;
             return ExitCode::UsageError;
         }
-        cout << BANNER << endl << endl;
+        printBanner();
         unsigned int lba = parseLba(argv[3]);
         unsigned int oldLba = (argc == 5) ? parseLba(argv[4]) : HACK_DEFAULT_OLD_LBA;
         if (command == "hack0") return runHack0(argv[2], lba, oldLba);
@@ -231,7 +250,7 @@ int runCli(int argc, char* argv[]) {
             cout << "Usage: " << PROGNAME << " cdda <boot.bin>" << endl;
             return ExitCode::UsageError;
         }
-        cout << BANNER << endl << endl;
+        printBanner();
         return runCdda(argv[2]);
     }
 
@@ -240,7 +259,7 @@ int runCli(int argc, char* argv[]) {
             cout << "Usage: " << PROGNAME << " bincon <boot.bin>" << endl;
             return ExitCode::UsageError;
         }
-        cout << BANNER << endl << endl;
+        printBanner();
         return runBincon(argv[2]);
     }
 
@@ -254,7 +273,7 @@ int runCli(int argc, char* argv[]) {
             cout << "Invalid <id>: must be 0-6 or \"jsr\"." << endl;
             return ExitCode::UsageError;
         }
-        cout << BANNER << endl << endl;
+        printBanner();
         return runUnprotect(argv[2], variant);
     }
 
@@ -271,7 +290,7 @@ int runCli(int argc, char* argv[]) {
                 return ExitCode::UsageError;
             }
         }
-        cout << BANNER << endl << endl;
+        printBanner();
         return runCheckProtection(argv[2], variant);
     }
 
@@ -280,7 +299,7 @@ int runCli(int argc, char* argv[]) {
             cout << "Usage: " << PROGNAME << " wince-cdda-fix-ip <ip.bin>" << endl;
             return ExitCode::UsageError;
         }
-        cout << BANNER << endl << endl;
+        printBanner();
         return runWinceCddaFix(argv[2]);
     }
 

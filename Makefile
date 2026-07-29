@@ -10,6 +10,14 @@ WINDRES = windres
 PACKER = upx
 RM = rm
 
+# Version. Single source of truth: bump it here and both the CLI banner and
+# the Win32 version resource follow. Passed unquoted and stringified in
+# version.hpp, so no shell-dependent \" escaping is involved.
+VERSION = 2.0.0.0
+comma := ,
+VERSION_RC := $(subst .,$(comma),$(VERSION))
+VERSIONFLAGS = -DBINHACK64_VERSION_RAW=$(VERSION) -DBINHACK64_VERSION_RC=$(VERSION_RC)
+
 # flags
 # add the -DDEBUG directive to CPPFLAGS to compile in DEBUG mode.
 #CPPFLAGS = -O3 -DDEBUG
@@ -56,11 +64,11 @@ test : all
 
 # compile source
 $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp | $(OBJ_DIR)
-	$(CC) $(CPPFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(VERSIONFLAGS) -c $< -o $@
 
-# include win32 resources
+# include win32 resources (-I so the .rc can include version.hpp)
 $(OBJ_DIR)%.o: $(SRC_DIR)%.rc | $(OBJ_DIR)
-	$(WINDRES) -i $< -o $@
+	$(WINDRES) -I$(SRC_DIR) $(VERSIONFLAGS) -i $< -o $@
 
 # create output directories on demand
 $(OBJ_DIR) $(BIN_DIR):

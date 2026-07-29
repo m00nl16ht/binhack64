@@ -447,6 +447,19 @@ assert_contains "version verb output mentions binhack64" "$out" "binhack64"
 
 out="$("$BIN" -v 2>&1)"; rc=$?
 assert_exit_code "-v exits 0" 0 "$rc"
+assert_contains "version output carries the version number" "$out" "v2.0.0.0"
+assert_contains "version output carries the copyright" "$out" "Copyright (C)"
+
+# PROGNAME comes from argv[0] with any .exe stripped, so the banner names
+# the binary the way it was invoked, not a hardcoded string or a full path.
+cp "$BIN" ./MyRenamed.exe
+out="$(./MyRenamed.exe version 2>&1)"
+assert_contains "banner uses argv[0]'s name" "$out" "MyRenamed - v"
+if printf '%s' "$out" | grep -q "MyRenamed.exe"; then
+    not_ok "banner must strip the .exe extension"
+else
+    ok "banner strips the .exe extension"
+fi
 
 # -----------------------------------------------------------------------------
 echo

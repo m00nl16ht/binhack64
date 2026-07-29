@@ -48,14 +48,14 @@ binhack64 hack0 <boot.bin> <lba> [old-lba]
     HACK0 (kikuchan, hack4 v1.5, 2001/05/04): replaces every raw old-lba
     reference with lba directly (no +166/+150 offset).
 
-binhack64 hack/hack1 <boot.bin> <lba> [old-lba]
+binhack64 hack1|hack <boot.bin> <lba> [old-lba]
     HACK1 (Bero): replaces every (old-lba+166) reference with (lba+166).
 
 binhack64 hack2 <boot.bin> <lba> [old-lba]
     HACK2 (Unknown): replaces every (old-lba+150) reference with (lba+150).
 
 binhack64 hack3 <boot.bin> <lba> [old-lba]
-    HACK3 (Pekearai, 2001-02-23): HACK1 + HACK2 combined.
+    HACK3 (Pekearai / Mr.KiMWU, 2001-02-23): HACK1 + HACK2 combined.
 
 binhack64 dahack <boot.bin> <lba> [old-lba]
     DAHACK (method posted by Mr.KiMWU, 2001-02-23): HACK1(lba) + HACK2(0).
@@ -154,12 +154,6 @@ binhack64 cdda 1ST_READ.BIN
 binhack64 binhack 1ST_READ.BIN mygame.ip 35500
 ```
 
-These patches mostly date back to 1999-2001, targeting a console that's
-been out of production for over two decades — they're kept here for
-homebrew and preservation purposes, not tested against every game they
-were ever used on, and come with no warranty. As the original toolkit's
-own readme put it: *"Please use as self-responsibility."*
-
 ## Building
 
 Requires a C++ toolchain (MinGW-w64 `g++` on Windows, or plain `g++`/`make`
@@ -196,3 +190,11 @@ binhack64 is free software, released under the
 See [CHANGELOG.md](CHANGELOG.md) for release history, including binhack32,
 and [CREDITS.md](CREDITS.md) for full author/date attribution of every
 patch method.
+
+## Disclaimer
+
+These patches mostly date back to 1999-2001, targeting a console that's
+been out of production for over two decades, they're kept here for
+preservation purposes, not tested against every game they
+were ever used on, and come with no warranty. As the original GDK toolkit's
+own readme put it: *"Please use as self-responsibility."*

@@ -1,0 +1,12 @@
+# Normalize text files to LF in the repository; check them out with the
+# platform's native line endings.
+* text=auto
+
+# Shell scripts must keep LF even on a Windows checkout: CRLF breaks the
+# shebang line under some shells.
+*.sh text eol=lf
+
+# Test fixtures are Dreamcast binaries - never touch their bytes.
+tests/fixtures/** binary
+*.BIN binary
+*.bin binary
