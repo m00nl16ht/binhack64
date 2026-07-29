@@ -4,8 +4,10 @@
 
 > The ultimate low-level binary patch tool for the Sega Dreamcast.
 
-**binhack64** is a modernized, 64-bit-native continuation of `binhack32`,
-itself a clone of the original 16-bit `BINHACK.EXE` for the Sega Dreamcast. It
+**binhack64** is a modernized, 64-bit-native continuation of
+[`binhack32`](https://sourceforge.net/projects/binhack32/), itself a clone of
+the original 16-bit `BINHACK.EXE` (from Echelon's toolset, archived on
+[Dumpcast](https://dcemulation.org/?title=Dumpcast)) for the Sega Dreamcast. It
 patches selfboot discs so a `BOOT.BIN` (the file that usually ships on disc
 as `1ST_READ.BIN`) can be found and run at the LBA it ends up burned at, and
 produces a matching `IP.BIN` (region-free, VGA-enabled, with the correct
@@ -25,9 +27,11 @@ The original tool always patched `BOOT.BIN` and `IP.BIN` together in one
 pass. binhack64 splits that into independent operations, since it's common
 to want only one of the two: regenerating `IP.BIN`, for example, for a
 `1ST_READ.BIN` you don't want to touch. It also adds a lot of patches, much
-as `HACK4` did back in the day. The CLI is modernized with git-style
-subcommands, while the legacy no-argument interactive mode is kept exactly
-as it was.
+as [`HACK4`](https://dcemulation.org/?title=Dumpcast) did back in the day;
+most of them are ported from FamilyGuy's own
+[`binhacks.py`](https://sourceforge.net/projects/binhacks/). The CLI is
+modernized with git-style subcommands, while the legacy no-argument
+interactive mode is kept exactly as it was.
 
 ## Usage
 
@@ -155,8 +159,9 @@ and useful if you need them: see the thread at
 
 ## Example: a typical multi-track (DA) game workflow
 
-Documented in the original GDK toolkit's own readme, for a CDDA game where
-session 2 starts at a shifted LBA (e.g. 35500):
+Documented in the original
+[GDK toolkit](https://dcemulation.org/?title=Dumpcast)'s own readme, for a
+CDDA game where session 2 starts at a shifted LBA (e.g. 35500):
 
 ```
 binhack64 --backup dahack 1ST_READ.BIN 35500

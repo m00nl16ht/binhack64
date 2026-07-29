@@ -2,7 +2,9 @@
 
 All notable changes to `binhack64` are documented in this file. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
-project continues binhack32's `X.Y.Z.W` version scheme.
+project continues
+[binhack32](https://sourceforge.net/projects/binhack32/)'s `X.Y.Z.W` version
+scheme.
 
 ## [2.0.0.0] - 2026-07-29
 
@@ -20,7 +22,9 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
   independently instead of always together. `binhack-boot` never touches
   `IP.BIN`, and `binhack-ip` never modifies `BOOT.BIN`.
 - `hack0`, `hack1`, `hack2`, `hack3` and `dahack` subcommands: alternate
-  LBA patches that only ever touch the boot binary. All accept an optional
+  LBA patches that only ever touch the boot binary, ported from
+  [binhacks.py](https://sourceforge.net/projects/binhacks/) and
+  [hack4](https://dcemulation.org/?title=Dumpcast). All accept an optional
   `[old-lba]` (default 45000). `hack` is accepted as an alias for `hack1`.
 - `cdda` subcommand: fixes multi-track CDDA boot binaries where the first
   audio track reads as track04 instead of track01.
@@ -65,9 +69,10 @@ a redesigned CLI, and independent BOOT.BIN/IP.BIN patching.
 
 ## binhack32 releases
 
-binhack32 was FamilyGuy's 32-bit clone of the original 16-bit
-`BINHACK.EXE`, refactored into binhack64 above. Kept here for historical
-reference.
+binhack32 was FamilyGuy's 32-bit clone of the original 16-bit `BINHACK.EXE`
+(from Echelon's toolset, archived on
+[Dumpcast](https://dcemulation.org/?title=Dumpcast)), refactored into
+binhack64 above. Kept here for historical reference.
 
 ### [1.0.0.5]
 
